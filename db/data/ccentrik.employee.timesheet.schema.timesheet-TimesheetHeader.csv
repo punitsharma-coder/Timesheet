@@ -1,0 +1,4 @@
+timesheetId,employee_employeeId,weekStartDate,weekEndDate,status,submissionType,submittedOn,approvedOn,rejectedOn,approvedBy_employeeId,remarks,isAutoApproved
+TS001,EMP1001,2026-04-27,2026-05-03,Partially Approved,Weekly,2026-04-27T09:00:00Z,2026-04-27T12:00:00Z,,EMP1005,Monday approved,false
+TS002,EMP1006,2026-04-27,2026-05-03,AutoApproved,Weekly,2026-04-27T10:00:00Z,2026-04-27T10:00:00Z,,EMP1006,Founder auto approved,true
+

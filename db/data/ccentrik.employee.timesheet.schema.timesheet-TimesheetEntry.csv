@@ -1,0 +1,6 @@
+entryId,timesheet_timesheetId,task_taskId,workDate,hoursWorked,description,entryStatus,isLocked
+ENT001,TS001,TASK001,2026-04-27,8.00,Worked on UI dashboard,Approved,true
+ENT002,TS001,TASK002,2026-04-28,6.00,Created CAP entities,Draft,false
+ENT003,TS001,TASK001,2026-04-29,7.50,Weekly entry page changes,Draft,false
+ENT004,TS002,TASK002,2026-04-27,8.00,Backend review by founder,Approved,true
+
