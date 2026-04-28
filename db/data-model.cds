@@ -1,7 +1,7 @@
 namespace ccentrik.employee.timesheet.schema;
 
 using { managed } from '@sap/cds/common';
- 
+  
 context timesheet{
 
 entity EmployeeMaster : managed {
