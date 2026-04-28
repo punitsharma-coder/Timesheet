@@ -1,0 +1,43 @@
+/* Sidebar dark background */
+.timesheetSidebar {
+    background-color: #111827 !important;
+}
+
+.timesheetSidebar .sapMListItems .sapMLIB {
+    background-color: transparent;
+    color: #9ca3af;
+}
+
+.timesheetSidebar .sapMListItems .sapMLIB:hover,
+.timesheetSidebar .sapMListItems .sapMLIBSelected {
+    background-color: rgba(96, 165, 250, 0.15) !important;
+    color: #60a5fa !important;
+    border-left: 2px solid #60a5fa;
+}
+
+/* Table cell inputs */
+.timesheetInput.sapMInputBase {
+    border-radius: 6px;
+    border: 1px solid var(--sapField_BorderColor);
+    background: var(--sapField_Background);
+    text-align: center;
+}
+
+.timesheetInput.sapMInputBase:focus-within {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+
+/* Highlight cells that have a non-zero value */
+.timesheetInput.sapMInputBase.hasValue {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #1d4ed8;
+    font-weight: 500;
+}
+
+/* Table header */
+.timesheetTable .sapUiTableColHdr {
+    background: var(--sapList_HeaderBackground);
+    font-weight: 500;
+}
