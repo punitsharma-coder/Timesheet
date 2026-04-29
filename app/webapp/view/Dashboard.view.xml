@@ -7,278 +7,208 @@
     xmlns:core="sap.ui.core"
     displayBlock="true">
 
-    <Page
-        id="dashboardPage"
-        showHeader="false"
-        class="sapUiContentPadding">
+    <Page id="dashboardPage" class="tsDashboardPage">
 
-        <!-- ── Page Header ── -->
         <customHeader>
-            <Bar>
+            <Bar class="tsPageHeader">
                 <contentLeft>
-                    <Title text="Timesheet" level="H2" />
+                    <VBox>
+                        <Title text="Timesheet" level="H2" />
+                        <Breadcrumbs currentLocationText="Timesheet" class="sapUiTinyMarginTop">
+                            <links><Link text="Dashboard" /></links>
+                        </Breadcrumbs>
+                    </VBox>
                 </contentLeft>
                 <contentRight>
-                    <!-- Day / Week toggle -->
-                    <SegmentedButton
-                        id="viewToggle"
-                        selectedKey="week"
-                        selectionChange=".onViewToggle">
+                    <SegmentedButton id="viewToggle" selectedKey="week" selectionChange=".onViewToggle">
                         <items>
                             <SegmentedButtonItem key="day"  text="Day"  />
                             <SegmentedButtonItem key="week" text="Week" />
                         </items>
                     </SegmentedButton>
-
-                    <Button
-                        text="Add Row"
-                        icon="sap-icon://add"
-                        type="Emphasized"
-                        press=".onAddRow" />
                 </contentRight>
             </Bar>
         </customHeader>
 
         <content>
-            <!-- Breadcrumb -->
-            <Breadcrumbs class="sapUiSmallMarginBottom">
-                <links>
-                    <Link text="Dashboard" />
-                </links>
-                <currentLocationText>Timesheet</currentLocationText>
-            </Breadcrumbs>
 
-            <!-- ── Week Navigator ── -->
-            <Toolbar class="sapUiSmallMarginBottom" style="background:transparent;padding:0">
-                <Title
-                    id="weekRangeTitle"
-                    text="{view>/weekRangeLabel}"
-                    level="H4" />
+            <!-- Week Navigator -->
+            <Toolbar class="tsWeekNav sapUiSmallMarginBottom" style="Clear">
+                <Title id="weekRangeTitle" text="{view>/weekRangeLabel}" level="H4" />
                 <ToolbarSpacer />
-                <core:Icon src="sap-icon://calendar" class="sapUiSmallMarginEnd" />
-                <Button
-                    icon="sap-icon://navigation-left-arrow"
-                    type="Transparent"
-                    press=".onPrevWeek" />
-                <Button
-                    text="Today"
-                    type="Transparent"
-                    press=".onToday" />
-                <Button
-                    icon="sap-icon://navigation-right-arrow"
-                    type="Transparent"
-                    press=".onNextWeek" />
+                <Button icon="sap-icon://calendar" type="Transparent"
+                    tooltip="Select week" press=".onCalendarPress" />
+                <Button icon="sap-icon://navigation-left-arrow" type="Transparent"
+                    press=".onPrevWeek" enabled="{view>/canGoPrev}" />
+                <Button text="Today" type="Transparent" press=".onToday" />
+                <Button icon="sap-icon://navigation-right-arrow" type="Transparent"
+                    press=".onNextWeek" enabled="{view>/canGoNext}" />
             </Toolbar>
 
-            <!-- ── Timesheet Grid ── -->
+            <!-- Timesheet Grid — all columns equal width (no explicit width set) -->
             <table:Table
                 id="timesheetTable"
-                rows="{
-                    path: '/TimeEntries',
-                    parameters: {
-                        expand: 'project',
-                        $filter: 'weekStart eq {view>/weekStartFilter}'
-                    }
-                }"
-                visibleRowCountMode="Auto"
-                minAutoRowCount="3"
+                rows="{rows>/rows}"
+                visibleRowCountMode="Fixed"
+                visibleRowCount="{view>/rowCount}"
                 selectionMode="None"
-                alternateRowColors="true"
+                alternateRowColors="false"
                 fixedColumnCount="1"
-                class="timesheetTable">
-
-                <table:extension>
-                    <!-- Column totals header row -->
-                    <Toolbar style="background:var(--sapList_HeaderBackground)">
-                        <Text text="" width="200px" />
-                        <Text text="{view>/days/0/label}" width="90px" textAlign="Center" />
-                        <Text text="{view>/days/1/label}" width="90px" textAlign="Center" />
-                        <Text text="{view>/days/2/label}" width="90px" textAlign="Center" />
-                        <Text text="{view>/days/3/label}" width="90px" textAlign="Center" />
-                        <Text text="{view>/days/4/label}" width="90px" textAlign="Center" />
-                        <Text text="{view>/days/5/label}" width="90px" textAlign="Center" />
-                        <Text text="{view>/days/6/label}" width="90px" textAlign="Center" />
-                        <Text text="Total" width="80px" textAlign="Center" class="sapUiSmallMarginBegin" />
-                    </Toolbar>
-                </table:extension>
+                class="timesheetTable"
+                rowHeight="48">
 
                 <table:columns>
-                    <!-- Project / Task column -->
-                    <table:Column width="200px" label="Project">
+
+                    <table:Column>
+                        <table:label><Label text="Project / Task" /></table:label>
                         <table:template>
-                            <VBox>
-                                <Text text="{project/name}" class="sapUiTinyMarginBottom" />
-                                <Text text="{taskName}" class="sapUiSmallFontSize" />
+                            <VBox class="tsProjectCell">
+                                <Input value="{rows>projectName}"
+                                    enabled="{path:'rows>_rowLocked', formatter:'.formatNotLocked'}"
+                                    placeholder="Project Name" class="tsProjectInput" />
+                                <Input value="{rows>taskName}"
+                                    enabled="{path:'rows>_rowLocked', formatter:'.formatNotLocked'}"
+                                    placeholder="Task" class="tsTaskInput" />
                             </VBox>
                         </table:template>
                     </table:Column>
 
-                    <!-- Mon -->
-                    <table:Column width="90px" hAlign="Center" label="Mon">
+                    <table:Column hAlign="Center">
+                        <table:label>
+                            <VBox alignItems="Center" class="tsColHeaderBox">
+                                <Text text="{view>/days/0/name}" class="tsDayName" />
+                                <Text text="{view>/days/0/date}" class="tsDayDate" />
+                            </VBox>
+                        </table:label>
                         <table:template>
-                            <Input
-                                value="{
-                                    path: 'mon',
-                                    type: 'sap.ui.model.type.Float',
-                                    formatOptions: { maxFractionDigits: 2 }
-                                }"
-                                width="70px"
-                                textAlign="Center"
-                                change=".onHoursChange"
-                                class="timesheetInput"
-                                customData>
-                                <customData>
-                                    <core:CustomData key="day" value="mon" />
-                                </customData>
+                            <Input value="{rows>mon}"
+                                enabled="{path:'rows>locked/mon', formatter:'.formatNotLocked'}"
+                                valueState="{path:'rows>mon', formatter:'.formatValueState'}"
+                                textAlign="Center" change=".onHoursChange" class="timesheetInput">
+                                <customData><core:CustomData key="day" value="mon" /></customData>
                             </Input>
                         </table:template>
                     </table:Column>
 
-                    <!-- Tue -->
-                    <table:Column width="90px" hAlign="Center" label="Tue">
+                    <table:Column hAlign="Center">
+                        <table:label>
+                            <VBox alignItems="Center" class="tsColHeaderBox">
+                                <Text text="{view>/days/1/name}" class="tsDayName" />
+                                <Text text="{view>/days/1/date}" class="tsDayDate" />
+                            </VBox>
+                        </table:label>
                         <table:template>
-                            <Input
-                                value="{
-                                    path: 'tue',
-                                    type: 'sap.ui.model.type.Float',
-                                    formatOptions: { maxFractionDigits: 2 }
-                                }"
-                                width="70px"
-                                textAlign="Center"
-                                change=".onHoursChange"
-                                class="timesheetInput"
-                                customData>
-                                <customData>
-                                    <core:CustomData key="day" value="tue" />
-                                </customData>
+                            <Input value="{rows>tue}"
+                                enabled="{path:'rows>locked/tue', formatter:'.formatNotLocked'}"
+                                valueState="{path:'rows>tue', formatter:'.formatValueState'}"
+                                textAlign="Center" change=".onHoursChange" class="timesheetInput">
+                                <customData><core:CustomData key="day" value="tue" /></customData>
                             </Input>
                         </table:template>
                     </table:Column>
 
-                    <!-- Wed -->
-                    <table:Column width="90px" hAlign="Center" label="Wed">
+                    <table:Column hAlign="Center">
+                        <table:label>
+                            <VBox alignItems="Center" class="tsColHeaderBox">
+                                <Text text="{view>/days/2/name}" class="tsDayName" />
+                                <Text text="{view>/days/2/date}" class="tsDayDate" />
+                            </VBox>
+                        </table:label>
                         <table:template>
-                            <Input
-                                value="{
-                                    path: 'wed',
-                                    type: 'sap.ui.model.type.Float',
-                                    formatOptions: { maxFractionDigits: 2 }
-                                }"
-                                width="70px"
-                                textAlign="Center"
-                                change=".onHoursChange"
-                                class="timesheetInput"
-                                customData>
-                                <customData>
-                                    <core:CustomData key="day" value="wed" />
-                                </customData>
+                            <Input value="{rows>wed}"
+                                enabled="{path:'rows>locked/wed', formatter:'.formatNotLocked'}"
+                                valueState="{path:'rows>wed', formatter:'.formatValueState'}"
+                                textAlign="Center" change=".onHoursChange" class="timesheetInput">
+                                <customData><core:CustomData key="day" value="wed" /></customData>
                             </Input>
                         </table:template>
                     </table:Column>
 
-                    <!-- Thu -->
-                    <table:Column width="90px" hAlign="Center" label="Thu">
+                    <table:Column hAlign="Center">
+                        <table:label>
+                            <VBox alignItems="Center" class="tsColHeaderBox">
+                                <Text text="{view>/days/3/name}" class="tsDayName" />
+                                <Text text="{view>/days/3/date}" class="tsDayDate" />
+                            </VBox>
+                        </table:label>
                         <table:template>
-                            <Input
-                                value="{
-                                    path: 'thu',
-                                    type: 'sap.ui.model.type.Float',
-                                    formatOptions: { maxFractionDigits: 2 }
-                                }"
-                                width="70px"
-                                textAlign="Center"
-                                change=".onHoursChange"
-                                class="timesheetInput"
-                                customData>
-                                <customData>
-                                    <core:CustomData key="day" value="thu" />
-                                </customData>
+                            <Input value="{rows>thu}"
+                                enabled="{path:'rows>locked/thu', formatter:'.formatNotLocked'}"
+                                valueState="{path:'rows>thu', formatter:'.formatValueState'}"
+                                textAlign="Center" change=".onHoursChange" class="timesheetInput">
+                                <customData><core:CustomData key="day" value="thu" /></customData>
                             </Input>
                         </table:template>
                     </table:Column>
 
-                    <!-- Fri -->
-                    <table:Column width="90px" hAlign="Center" label="Fri">
+                    <table:Column hAlign="Center">
+                        <table:label>
+                            <VBox alignItems="Center" class="tsColHeaderBox">
+                                <Text text="{view>/days/4/name}" class="tsDayName" />
+                                <Text text="{view>/days/4/date}" class="tsDayDate" />
+                            </VBox>
+                        </table:label>
                         <table:template>
-                            <Input
-                                value="{
-                                    path: 'fri',
-                                    type: 'sap.ui.model.type.Float',
-                                    formatOptions: { maxFractionDigits: 2 }
-                                }"
-                                width="70px"
-                                textAlign="Center"
-                                change=".onHoursChange"
-                                class="timesheetInput"
-                                customData>
-                                <customData>
-                                    <core:CustomData key="day" value="fri" />
-                                </customData>
+                            <Input value="{rows>fri}"
+                                enabled="{path:'rows>locked/fri', formatter:'.formatNotLocked'}"
+                                valueState="{path:'rows>fri', formatter:'.formatValueState'}"
+                                textAlign="Center" change=".onHoursChange" class="timesheetInput">
+                                <customData><core:CustomData key="day" value="fri" /></customData>
                             </Input>
                         </table:template>
                     </table:Column>
 
-                    <!-- Sat -->
-                    <table:Column width="90px" hAlign="Center" label="Sat">
+                    <table:Column hAlign="Center">
+                        <table:label>
+                            <VBox alignItems="Center" class="tsColHeaderBox">
+                                <Text text="{view>/days/5/name}" class="tsDayName" />
+                                <Text text="{view>/days/5/date}" class="tsDayDate" />
+                            </VBox>
+                        </table:label>
                         <table:template>
-                            <Input
-                                value="{
-                                    path: 'sat',
-                                    type: 'sap.ui.model.type.Float',
-                                    formatOptions: { maxFractionDigits: 2 }
-                                }"
-                                width="70px"
-                                textAlign="Center"
-                                change=".onHoursChange"
-                                class="timesheetInput"
-                                customData>
-                                <customData>
-                                    <core:CustomData key="day" value="sat" />
-                                </customData>
+                            <Input value="{rows>sat}"
+                                enabled="{path:'rows>locked/sat', formatter:'.formatNotLocked'}"
+                                valueState="{path:'rows>sat', formatter:'.formatValueState'}"
+                                textAlign="Center" change=".onHoursChange" class="timesheetInput">
+                                <customData><core:CustomData key="day" value="sat" /></customData>
                             </Input>
                         </table:template>
                     </table:Column>
 
-                    <!-- Sun -->
-                    <table:Column width="90px" hAlign="Center" label="Sun">
+                    <table:Column hAlign="Center">
+                        <table:label>
+                            <VBox alignItems="Center" class="tsColHeaderBox">
+                                <Text text="{view>/days/6/name}" class="tsDayName" />
+                                <Text text="{view>/days/6/date}" class="tsDayDate" />
+                            </VBox>
+                        </table:label>
                         <table:template>
-                            <Input
-                                value="{
-                                    path: 'sun',
-                                    type: 'sap.ui.model.type.Float',
-                                    formatOptions: { maxFractionDigits: 2 }
-                                }"
-                                width="70px"
-                                textAlign="Center"
-                                change=".onHoursChange"
-                                class="timesheetInput"
-                                customData>
-                                <customData>
-                                    <core:CustomData key="day" value="sun" />
-                                </customData>
+                            <Input value="{rows>sun}"
+                                enabled="{path:'rows>locked/sun', formatter:'.formatNotLocked'}"
+                                valueState="{path:'rows>sun', formatter:'.formatValueState'}"
+                                textAlign="Center" change=".onHoursChange" class="timesheetInput">
+                                <customData><core:CustomData key="day" value="sun" /></customData>
                             </Input>
                         </table:template>
                     </table:Column>
 
-                    <!-- Row Total (computed) -->
-                    <table:Column width="80px" hAlign="Center" label="Total">
+                    <table:Column hAlign="Center">
+                        <table:label><Label text="Week Total" /></table:label>
                         <table:template>
                             <Text
-                                text="{
-                                    parts: ['mon','tue','wed','thu','fri','sat','sun'],
-                                    formatter: '.formatRowTotal'
-                                }"
-                                class="sapUiSmallMarginBegin" />
+                                text="{parts:['rows>mon','rows>tue','rows>wed','rows>thu','rows>fri','rows>sat','rows>sun'], formatter:'.formatRowTotal'}"
+                                textAlign="Center" class="tsRowTotal" />
                         </table:template>
                     </table:Column>
+
                 </table:columns>
             </table:Table>
 
-            <!-- ── Grand Total ── -->
-            <Toolbar class="sapUiMediumMarginTop" style="background:transparent;justify-content:flex-end">
-                <Text text="Total : " class="sapUiSmallMarginEnd" />
-                <Title text="{view>/grandTotal}" level="H4" />
-            </Toolbar>
+            <!-- Action Bar -->
+            <HBox justifyContent="SpaceBetween" alignItems="Center" class="tsActionBar">
+                <Button text="+ Add Row" type="Emphasized" press=".onAddRow" />
+                <Button text="Submit"    type="Accept"     press=".onSubmit" />
+            </HBox>
 
         </content>
     </Page>

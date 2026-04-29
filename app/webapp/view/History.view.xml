@@ -1,0 +1,166 @@
+<mvc:View
+    controllerName="timesheet.app.controller.History"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:unified="sap.ui.unified"
+    xmlns:table="sap.ui.table"
+    xmlns:core="sap.ui.core"
+    displayBlock="true">
+
+    <Page id="historyPage" title="Timesheet History" class="tsDashboardPage" showNavButton="false">
+
+        <content>
+            <VBox class="tsHistContainer">
+
+                <!-- Week selector bar -->
+                <HBox alignItems="Center" class="tsHistWeekBar">
+                    <Button icon="sap-icon://calendar" type="Transparent"
+                        tooltip="Select a week" press=".onCalendarToggle" />
+                    <Text text="{histView>/selectedWeekLabel}" class="tsHistWeekLabel" />
+                </HBox>
+
+                <!-- Inline calendar — hidden by default -->
+                <VBox visible="{histView>/showCalendar}" class="tsHistCalendarWrapper">
+                    <unified:Calendar id="histCalendar" select=".onCalendarSelect" />
+                </VBox>
+
+                <!-- Read-only table. Last 2 rows = Day Total + Status (fixedBottomRowCount set in controller) -->
+                <table:Table
+                    id="histTable"
+                    rows="{histView>/rows}"
+                    visibleRowCountMode="Fixed"
+                    visibleRowCount="{histView>/rowCount}"
+                    selectionMode="None"
+                    alternateRowColors="false"
+                    fixedColumnCount="1"
+                    class="timesheetTable"
+                    rowHeight="48">
+
+                    <table:noData>
+                        <Text text="{histView>/noDataText}" class="sapUiMediumMargin" />
+                    </table:noData>
+
+                    <table:columns>
+
+                        <!-- All columns have no explicit width — UI5 divides them equally -->
+
+                        <table:Column>
+                            <table:label><Label text="Project / Task" /></table:label>
+                            <table:template>
+                                <VBox class="tsProjectCell">
+                                    <Text text="{histView>projectName}"
+                                        class="{path:'histView>_type', formatter:'.formatProjectClass'}"
+                                        wrapping="false" />
+                                    <Text text="{histView>taskName}" class="tsTaskName" wrapping="false" />
+                                </VBox>
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column hAlign="Center">
+                            <table:label>
+                                <VBox alignItems="Center" class="tsColHeaderBox">
+                                    <Text text="{histView>/days/0/name}" class="tsDayName" />
+                                    <Text text="{histView>/days/0/date}" class="tsDayDate" />
+                                </VBox>
+                            </table:label>
+                            <table:template>
+                                <Text text="{histView>mon}" textAlign="Center"
+                                    class="{parts:[{path:'histView>mon'},{path:'histView>_type'}], formatter:'.formatDayCellClass'}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column hAlign="Center">
+                            <table:label>
+                                <VBox alignItems="Center" class="tsColHeaderBox">
+                                    <Text text="{histView>/days/1/name}" class="tsDayName" />
+                                    <Text text="{histView>/days/1/date}" class="tsDayDate" />
+                                </VBox>
+                            </table:label>
+                            <table:template>
+                                <Text text="{histView>tue}" textAlign="Center"
+                                    class="{parts:[{path:'histView>tue'},{path:'histView>_type'}], formatter:'.formatDayCellClass'}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column hAlign="Center">
+                            <table:label>
+                                <VBox alignItems="Center" class="tsColHeaderBox">
+                                    <Text text="{histView>/days/2/name}" class="tsDayName" />
+                                    <Text text="{histView>/days/2/date}" class="tsDayDate" />
+                                </VBox>
+                            </table:label>
+                            <table:template>
+                                <Text text="{histView>wed}" textAlign="Center"
+                                    class="{parts:[{path:'histView>wed'},{path:'histView>_type'}], formatter:'.formatDayCellClass'}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column hAlign="Center">
+                            <table:label>
+                                <VBox alignItems="Center" class="tsColHeaderBox">
+                                    <Text text="{histView>/days/3/name}" class="tsDayName" />
+                                    <Text text="{histView>/days/3/date}" class="tsDayDate" />
+                                </VBox>
+                            </table:label>
+                            <table:template>
+                                <Text text="{histView>thu}" textAlign="Center"
+                                    class="{parts:[{path:'histView>thu'},{path:'histView>_type'}], formatter:'.formatDayCellClass'}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column hAlign="Center">
+                            <table:label>
+                                <VBox alignItems="Center" class="tsColHeaderBox">
+                                    <Text text="{histView>/days/4/name}" class="tsDayName" />
+                                    <Text text="{histView>/days/4/date}" class="tsDayDate" />
+                                </VBox>
+                            </table:label>
+                            <table:template>
+                                <Text text="{histView>fri}" textAlign="Center"
+                                    class="{parts:[{path:'histView>fri'},{path:'histView>_type'}], formatter:'.formatDayCellClass'}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column hAlign="Center">
+                            <table:label>
+                                <VBox alignItems="Center" class="tsColHeaderBox">
+                                    <Text text="{histView>/days/5/name}" class="tsDayName" />
+                                    <Text text="{histView>/days/5/date}" class="tsDayDate" />
+                                </VBox>
+                            </table:label>
+                            <table:template>
+                                <Text text="{histView>sat}" textAlign="Center"
+                                    class="{parts:[{path:'histView>sat'},{path:'histView>_type'}], formatter:'.formatDayCellClass'}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column hAlign="Center">
+                            <table:label>
+                                <VBox alignItems="Center" class="tsColHeaderBox">
+                                    <Text text="{histView>/days/6/name}" class="tsDayName" />
+                                    <Text text="{histView>/days/6/date}" class="tsDayDate" />
+                                </VBox>
+                            </table:label>
+                            <table:template>
+                                <Text text="{histView>sun}" textAlign="Center"
+                                    class="{parts:[{path:'histView>sun'},{path:'histView>_type'}], formatter:'.formatDayCellClass'}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column hAlign="Center">
+                            <table:label><Label text="Week Total" /></table:label>
+                            <table:template>
+                                <Text text="{histView>_weekTotal}" textAlign="Center"
+                                    class="{path:'histView>_type', formatter:'.formatWeekTotalClass'}" />
+                            </table:template>
+                        </table:Column>
+
+                    </table:columns>
+                </table:Table>
+
+            </VBox>
+        </content>
+
+    </Page>
+
+</mvc:View>

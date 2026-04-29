@@ -7,12 +7,14 @@ sap.ui.define([
     return Controller.extend("timesheet.app.controller.App", {
 
         onInit() {
-            // Select the first nav item by default
-            const oList = this.byId("navList");
-            const oFirstItem = oList?.getItems?.()?.[0];
-            if (oFirstItem) {
-                oList.setSelectedItem(oFirstItem);
-            }
+            const oList = this.byId("mainNavList");
+            const oFirst = oList?.getItems?.()?.[0];
+            if (oFirst) oList.setSelectedItem(oFirst);
+        },
+
+        onMenuToggle() {
+            // Toggle sidebar visibility via CSS class
+            this.byId("app").toggleStyleClass("tsMasterHidden");
         },
 
         onNavSelect(oEvent) {

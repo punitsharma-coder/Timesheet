@@ -3,96 +3,63 @@
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m"
     xmlns:f="sap.f"
+    xmlns:core="sap.ui.core"
     displayBlock="true">
 
     <f:ShellBar
         id="shellBar"
         title="TIMESHEET"
+        showMenuButton="true"
+        menuButtonPress=".onMenuToggle"
         showNotifications="true"
-        showProductSwitcher="false"
-        homeIconTooltip="Home">
+        showProductSwitcher="false">
         <f:profile>
-            <Avatar
-                initials="JD"
-                displaySize="XS"
-                press=".onProfilePress" />
+            <Avatar initials="JD" displaySize="XS" press=".onProfilePress" />
         </f:profile>
     </f:ShellBar>
 
-    <SplitApp id="app" initialMaster="navList" initialDetail="dashboard">
+    <SplitApp id="app">
 
-        <!-- Sidebar (Master) -->
         <masterPages>
-            <Page id="navList" showHeader="false" class="timesheetSidebar">
-                <List selectionChange=".onNavSelect" mode="SingleSelectMaster">
+            <Page id="navPage" showHeader="false" class="timesheetSidebar">
 
+                <List id="mainNavList" selectionChange=".onNavSelect" mode="SingleSelectMaster">
                     <items>
-                        <StandardListItem
-                            id="navDashboard"
-                            title="Dashboard"
-                            icon="sap-icon://home"
-                            type="Active"
-                            customData>
-                            <customData>
-                                <core:CustomData xmlns:core="sap.ui.core"
-                                    key="target" value="dashboard" />
-                            </customData>
+                        <StandardListItem title="Dashboard" icon="sap-icon://home" type="Active">
+                            <customData><core:CustomData key="target" value="dashboard" /></customData>
                         </StandardListItem>
-
-                        <StandardListItem
-                            title="Timesheet"
-                            icon="sap-icon://calendar"
-                            type="Active">
-                            <customData>
-                                <core:CustomData xmlns:core="sap.ui.core"
-                                    key="target" value="dashboard" />
-                            </customData>
+                        <StandardListItem title="Timesheet" icon="sap-icon://calendar" type="Active">
+                            <customData><core:CustomData key="target" value="dashboard" /></customData>
                         </StandardListItem>
-
-                        <StandardListItem
-                            title="My Wallet"
-                            icon="sap-icon://wallet"
-                            type="Active">
-                            <customData>
-                                <core:CustomData xmlns:core="sap.ui.core"
-                                    key="target" value="dashboard" />
-                            </customData>
+                        <StandardListItem title="My Wallet" icon="sap-icon://wallet" type="Active">
+                            <customData><core:CustomData key="target" value="dashboard" /></customData>
+                        </StandardListItem>
+                        <StandardListItem title="Timesheet History" icon="sap-icon://history" type="Active">
+                            <customData><core:CustomData key="target" value="history" /></customData>
                         </StandardListItem>
                     </items>
                 </List>
 
-                <List
-                    headerText="Account"
-                    selectionChange=".onNavSelect"
-                    mode="SingleSelectMaster">
+                <List id="accountNavList" headerText="Account" mode="None">
                     <items>
-                        <StandardListItem
-                            title="Notifications"
-                            icon="sap-icon://bell" />
-                        <StandardListItem
-                            title="Settings"
-                            icon="sap-icon://action-settings" />
-                        <StandardListItem
-                            title="FAQ"
-                            icon="sap-icon://sys-help" />
+                        <StandardListItem title="Notifications" icon="sap-icon://bell" />
+                        <StandardListItem title="Settings"      icon="sap-icon://action-settings" />
+                        <StandardListItem title="FAQ"           icon="sap-icon://sys-help" />
                     </items>
                 </List>
 
                 <footer>
-                    <OverflowToolbar>
-                        <Button
-                            text="Log Out"
-                            icon="sap-icon://log"
-                            type="Negative"
-                            press=".onLogout" />
+                    <OverflowToolbar class="tsSidebarFooter">
+                        <Button text="Log Out" icon="sap-icon://log" type="Negative" press=".onLogout" />
                     </OverflowToolbar>
                 </footer>
+
             </Page>
         </masterPages>
 
-        <!-- Detail pages injected by routing -->
+        <!-- Router renders dashboard/history views into this NavContainer -->
         <detailPages>
-            <Page id="detailPlaceholder" />
+            <NavContainer id="detailNav" />
         </detailPages>
 
     </SplitApp>

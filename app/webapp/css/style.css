@@ -1,43 +1,374 @@
-/* Sidebar dark background */
-.timesheetSidebar {
+/* ── Layout: ShellBar + SplitApp ────────────────────────────────── */
+html, body { margin: 0; overflow: hidden; }
+
+.sapMSplitContainer {
+    height: calc(100vh - 44px) !important;
+}
+
+/* ── Sidebar collapse via CSS class toggle ──────────────────────── */
+.tsMasterHidden .sapMSplitContainerMaster {
+    width: 0 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+}
+
+.sapMSplitContainerMaster {
+    transition: width 0.25s ease;
+}
+
+/* ── Sidebar dark theme — targeted via timesheetSidebar class ────── */
+.timesheetSidebar,
+.timesheetSidebar .sapMPageBg,
+.timesheetSidebar > section,
+.timesheetSidebar .sapMList,
+.timesheetSidebar .sapMListUl,
+.timesheetSidebar .sapMListItems,
+.timesheetSidebar .sapMListHdrTxt {
     background-color: #111827 !important;
 }
 
-.timesheetSidebar .sapMListItems .sapMLIB {
-    background-color: transparent;
-    color: #9ca3af;
+.timesheetSidebar .sapMLIB {
+    background-color: #111827 !important;
+    border-bottom-color: #1f2937 !important;
 }
 
-.timesheetSidebar .sapMListItems .sapMLIB:hover,
-.timesheetSidebar .sapMListItems .sapMLIBSelected {
-    background-color: rgba(96, 165, 250, 0.15) !important;
+.timesheetSidebar .sapMLIB .sapMSLITitle,
+.timesheetSidebar .sapMLIB .sapUiIcon {
+    color: #9ca3af !important;
+}
+
+.timesheetSidebar .sapMLIB:hover {
+    background-color: rgba(96,165,250,0.12) !important;
+    border-left: 3px solid #60a5fa !important;
+}
+
+.timesheetSidebar .sapMLIB:hover .sapMSLITitle,
+.timesheetSidebar .sapMLIB:hover .sapUiIcon {
     color: #60a5fa !important;
-    border-left: 2px solid #60a5fa;
 }
 
-/* Table cell inputs */
+.timesheetSidebar .sapMLIBSelected,
+.timesheetSidebar .sapMLIBSelected:hover {
+    background-color: rgba(96,165,250,0.15) !important;
+    border-left: 3px solid #60a5fa !important;
+}
+
+.timesheetSidebar .sapMLIBSelected .sapMSLITitle,
+.timesheetSidebar .sapMLIBSelected .sapUiIcon {
+    color: #60a5fa !important;
+}
+
+.timesheetSidebar .sapMListHdr,
+.timesheetSidebar .sapMListHdrText {
+    background-color: #111827 !important;
+    color: #6b7280 !important;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* Sidebar footer */
+.timesheetSidebar .sapMPageFooter,
+.timesheetSidebar .sapMOverflowToolbar,
+.timesheetSidebar .sapMTB {
+    background-color: #111827 !important;
+    border-top: 1px solid #1f2937 !important;
+}
+
+/* ── Dashboard page ─────────────────────────────────────────────── */
+.tsDashboardPage {
+    background-color: #f9fafb;
+}
+
+.tsDashboardPage > .sapMPageHeader .sapMBar {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    height: auto;
+    min-height: 64px;
+    padding: 0.5rem 1rem;
+}
+
+/* ── Week navigator ─────────────────────────────────────────────── */
+.tsWeekNav {
+    padding: 0.5rem 1rem 0 !important;
+}
+
+/* ── Table column headers (two-line) ────────────────────────────── */
+.timesheetTable .sapUiTableColHdrTr td {
+    height: 56px !important;
+    vertical-align: middle !important;
+}
+
+.tsColHeaderBox { padding: 4px 0; }
+
+.tsDayName {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.tsDayDate {
+    font-size: 0.72rem;
+    color: #6b7280;
+}
+
+/* ── Project / Task cell ────────────────────────────────────────── */
+.tsProjectCell {
+    padding: 4px 8px;
+    min-width: 120px;
+}
+
+.tsProjectName {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #111827;
+}
+
+.tsTaskName {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+/* ── Project / Task inline inputs ──────────────────────────────── */
+.tsProjectInput.sapMInputBase,
+.tsTaskInput.sapMInputBase {
+    border: 1px solid transparent;
+    background: transparent;
+    border-radius: 4px;
+    height: 22px;
+    min-height: 22px;
+}
+
+.tsProjectInput .sapMInputBaseInner {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #111827;
+    padding: 0 4px;
+}
+
+.tsTaskInput .sapMInputBaseInner {
+    font-size: 0.75rem;
+    color: #6b7280;
+    padding: 0 4px;
+}
+
+.tsProjectInput.sapMInputBase:focus-within,
+.tsTaskInput.sapMInputBase:focus-within {
+    border-color: #3b82f6 !important;
+    background: #eff6ff !important;
+}
+
+/* ── Hour inputs ────────────────────────────────────────────────── */
 .timesheetInput.sapMInputBase {
     border-radius: 6px;
-    border: 1px solid var(--sapField_BorderColor);
-    background: var(--sapField_Background);
+    border: 1px solid #d1d5db;
+    background: #f3f4f6;
     text-align: center;
+    font-size: 0.85rem;
 }
 
 .timesheetInput.sapMInputBase:focus-within {
-    border-color: #2563eb;
+    border-color: #3b82f6;
     background: #eff6ff;
 }
 
-/* Highlight cells that have a non-zero value */
-.timesheetInput.sapMInputBase.hasValue {
-    background: #eff6ff;
-    border-color: #93c5fd;
-    color: #1d4ed8;
+/* Green highlight for cells with values (valueState="Success") */
+.timesheetInput.sapMInputSuccess .sapMInputBaseContentWrapper,
+.timesheetInput.sapMInputSuccess .sapMInputBaseSuccessContentWrapper {
+    background: #d1fae5 !important;
+}
+
+.timesheetInput.sapMInputSuccess .sapMInputBaseInner {
+    background: transparent !important;
+    color: #065f46 !important;
+    font-weight: 600;
+}
+
+.timesheetInput.sapMInputSuccess {
+    border-color: #34d399 !important;
+}
+
+/* ── Locked / submitted cells (disabled inputs) ─────────────────── */
+.timesheetInput.sapMInputBaseDisabled {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+    opacity: 1 !important;          /* keep value visible */
+    cursor: not-allowed !important;
+}
+
+.timesheetInput.sapMInputBaseDisabled .sapMInputBaseInner {
+    color: #64748b !important;
+    font-weight: 500;
+    background: transparent !important;
+}
+
+/* Locked cells that have a value get a subtle grey-green tint */
+.timesheetInput.sapMInputBaseDisabled.sapMInputSuccess .sapMInputBaseContentWrapper {
+    background: #e2f4ea !important;
+}
+
+.timesheetInput.sapMInputBaseDisabled.sapMInputSuccess .sapMInputBaseInner {
+    color: #3d7a56 !important;
+}
+
+/* Locked project/task inputs */
+.tsProjectInput.sapMInputBaseDisabled,
+.tsTaskInput.sapMInputBaseDisabled {
+    border-color: transparent !important;
+    background: transparent !important;
+    cursor: not-allowed !important;
+}
+
+.tsProjectInput.sapMInputBaseDisabled .sapMInputBaseInner {
+    color: #374151 !important;
     font-weight: 500;
 }
 
-/* Table header */
-.timesheetTable .sapUiTableColHdr {
-    background: var(--sapList_HeaderBackground);
+.tsTaskInput.sapMInputBaseDisabled .sapMInputBaseInner {
+    color: #6b7280 !important;
+}
+
+/* ── Row total ──────────────────────────────────────────────────── */
+.tsRowTotal {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #111827;
+}
+
+/* ── Column total label (Project/Task cell of Day Total row) ─────── */
+.tsColTotalLabel {
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    color: #374151 !important;
+}
+
+/* ── Status row label (Project/Task cell of Status row) ──────────── */
+.tsStatusLabel {
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    color: #374151 !important;
+}
+
+/* ── History list ───────────────────────────────────────────────── */
+.tsHistoryItem {
+    padding: 0.75rem 1rem;
+    width: 100%;
+}
+
+/* ── History detail dialog ──────────────────────────────────────── */
+.tsHistDetailHeader {
+    padding: 6px 8px;
+    background: #f3f4f6;
+    border-bottom: 2px solid #e5e7eb;
+    margin-bottom: 4px;
+}
+
+.tsHistDetailRow {
+    padding: 6px 8px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.tsHistDetailTotals {
+    padding: 6px 8px;
+    border-top: 2px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.tsHistGreenCell {
+    color: #065f46 !important;
+    font-weight: 600;
+}
+
+/* ── Action Bar (below dashboard table) ─────────────────────────── */
+.tsActionBar {
+    padding: 0.5rem 1rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* ── History page layout ─────────────────────────────────────────── */
+.tsHistLayout {
+    padding: 1rem;
+    gap: 1.5rem;
+}
+
+.tsHistCalendarPanel {
+    min-width: 270px;
+    flex-shrink: 0;
+}
+
+.tsHistDetailPanel {
+    flex: 1;
+    overflow-x: auto;
+    min-width: 0;
+}
+
+.tsHistNoData {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    color: #9ca3af;
+    text-align: center;
+}
+
+.tsHistDetailHeader {
+    padding: 8px 0 12px;
+    border-bottom: 2px solid #e5e7eb;
+    margin-bottom: 0;
+}
+/* ── History table: Day Total row cells ──────────────────────────── */
+.tsColTotalCell {
+    font-weight: 700 !important;
+    font-size: 0.85rem !important;
+    color: #374151 !important;
+}
+
+/* ── History table: Status row cell colors ───────────────────────── */
+.tsStatusApproved {
+    color: #16a34a !important;
+    font-weight: 700 !important;
+    font-size: 0.82rem !important;
+}
+.tsStatusPending {
+    color: #d97706 !important;
+    font-weight: 700 !important;
+    font-size: 0.82rem !important;
+}
+.tsStatusRejected {
+    color: #dc2626 !important;
+    font-weight: 700 !important;
+    font-size: 0.82rem !important;
+}
+
+/* ── History table: fixed-bottom row background ──────────────────── */
+.timesheetTable .sapUiTableFixedBottom td {
+    background-color: #f9fafb !important;
+}
+.timesheetTable .sapUiTableFixedBottom:last-child td {
+    border-top: 1px solid #e5e7eb;
+}
+
+/* History week bar */
+.tsHistWeekBar {
+    padding: 0.5rem 1rem;
+    gap: 0.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    background: #fff;
+}
+
+.tsHistWeekLabel {
+    font-size: 0.95rem;
     font-weight: 500;
+    color: #374151;
+}
+
+.tsHistCalendarWrapper {
+    padding: 0.5rem 1rem;
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.tsHistContainer {
+    padding: 0;
 }
