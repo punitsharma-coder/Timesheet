@@ -133,7 +133,12 @@ sap.ui.define([
 
             const status    = submission.status || "Pending";
             const statusRow = { _type: "status", projectName: "Status", taskName: "", _weekTotal: "" };
-            DAYS.forEach(d => { statusRow[d] = dataRows.some(r => r[d] && r[d] !== "") ? status : ""; });
+            DAYS.forEach(d => {
+                const hasValue = dataRows.some(r => r[d] && r[d] !== "");
+                if (!hasValue) { statusRow[d] = ""; return; }
+                const isDayApproved = dataRows.some(r => (r.approved || {})[d] === true);
+                statusRow[d] = isDayApproved ? "Approved" : status;
+            });
 
             const allRows = [...dataRows, dayTotalRow, statusRow];
             this._oMgrModel.setProperty("/rows",     allRows);
@@ -163,6 +168,7 @@ sap.ui.define([
 
         _doApprove() {
             const sub = this._selectedSub;
+            this._markApprovedInLocked(sub.weekStart);
             this._persistStatus(sub.weekStart, "Approved", "");
             this._postNotification(sub.weekStart, sub.weekRange, "approved", "");
 
@@ -235,6 +241,21 @@ sap.ui.define([
             MessageToast.show(`Timesheet rejected. ${sub.employeeName || "Employee"} has been notified.`);
         },
 
+        // ── Mark approved days in locked model ───────────────────────────────
+        _markApprovedInLocked(sWeekStart) {
+            const oLocksModel = this.getOwnerComponent().getModel("locked");
+            const allLocks    = oLocksModel.getData();
+            const weekRows    = allLocks[sWeekStart];
+            if (!weekRows) return;
+
+            weekRows.forEach(row => {
+                if (!row.approved) row.approved = { mon:false, tue:false, wed:false, thu:false, fri:false, sat:false, sun:false };
+                DAYS.forEach(d => { if (row.locked[d]) row.approved[d] = true; });
+            });
+            oLocksModel.setData(allLocks);
+            this.getOwnerComponent().persistLocked();
+        },
+
         // ── Shared persistence helpers ────────────────────────────────────────
 
         _persistStatus(sWeekStart, sStatus, sRemarks) {
@@ -257,8 +278,9 @@ sap.ui.define([
             if (!weekRows) return;
 
             weekRows.forEach(row => {
-                DAYS.forEach(d => { row.locked[d] = false; });
-                row._rowLocked = false;
+                const approved = row.approved || {};
+                DAYS.forEach(d => { if (!approved[d]) row.locked[d] = false; });
+                row._rowLocked = DAYS.some(d => row.locked[d]);
             });
             oLocksModel.setData(allLocks);
             this.getOwnerComponent().persistLocked();

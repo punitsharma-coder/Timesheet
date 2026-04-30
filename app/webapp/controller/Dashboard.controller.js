@@ -12,10 +12,13 @@ sap.ui.define([
     const DAY_NAMES = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
     const MONTHS    = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
+    const EMPTY_APPROVED = () => ({ mon:false, tue:false, wed:false, thu:false, fri:false, sat:false, sun:false });
+
     const EMPTY_ROW = () => ({
         projectName: "", taskName: "", taskId: "",
         mon:"", tue:"", wed:"", thu:"", fri:"", sat:"", sun:"",
-        locked:     { mon:false, tue:false, wed:false, thu:false, fri:false, sat:false, sun:false },
+        locked:   { mon:false, tue:false, wed:false, thu:false, fri:false, sat:false, sun:false },
+        approved: EMPTY_APPROVED(),
         _rowLocked: false
     });
 
@@ -27,17 +30,25 @@ sap.ui.define([
         return d;
     }
 
-    function toDateString(date) { return date.toISOString().split("T")[0]; }
+    function toDateString(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, "0");
+        const d = String(date.getDate()).padStart(2, "0");
+        return `${y}-${m}-${d}`;
+    }
 
     function toShortLabel(date) {
         return `${date.getDate()} ${MONTHS[date.getMonth()]}`;
     }
 
     function buildDayLabels(weekStart) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
         return DAY_NAMES.map((name, i) => {
             const d = new Date(weekStart);
             d.setDate(weekStart.getDate() + i);
-            return { name, date: toShortLabel(d) };
+            d.setHours(0, 0, 0, 0);
+            return { name, date: toShortLabel(d), isFuture: d > today };
         });
     }
 
@@ -61,6 +72,7 @@ sap.ui.define([
                 weekStartFilter: "",
                 weekRangeLabel:  "",
                 grandTotal:      "0:00",
+                canSubmit:       false,
                 rowCount:        1,
                 canGoPrev:       false,
                 canGoNext:       false,
@@ -78,6 +90,54 @@ sap.ui.define([
 
             this._setWeek(new Date());
             this._loadTasks();
+
+            this.getOwnerComponent().getRouter()
+                .getRoute("dashboard")
+                .attachPatternMatched(this._onRouteMatched, this);
+        },
+
+        _onRouteMatched() {
+            const oComp = this.getOwnerComponent();
+            if (oComp._pendingWeekStart) {
+                const sFilter = oComp._pendingWeekStart;
+                oComp._pendingWeekStart = null;
+                this._setWeekByFilter(sFilter);
+            } else {
+                this._loadTimesheetData();
+            }
+        },
+
+        // Navigate to the week whose locked-model key is sFilter.
+        // Handles both new (local-date) and old (UTC-shifted) stored keys.
+        _setWeekByFilter(sFilter) {
+            const minWeek = getAllowedMinWeek();
+            const maxWeek = getAllowedMaxWeek();
+            const [y, m, d] = sFilter.split("-").map(Number);
+
+            // Find the local Monday that was originally stored under sFilter.
+            // Try the filter date itself first (new data), then +1 day (old UTC-shifted data).
+            let start = null;
+            for (let offset = 0; offset <= 1; offset++) {
+                const monday = getWeekStart(new Date(y, m - 1, d + offset));
+                if (toDateString(monday) === sFilter) { start = monday; break; }
+            }
+            // Fallback: old UTC-shifted key — real Monday is filterDate + 1
+            if (!start) start = getWeekStart(new Date(y, m - 1, d + 1));
+
+            if (start.getTime() < minWeek.getTime()) start = new Date(minWeek);
+            if (start.getTime() > maxWeek.getTime()) start = new Date(maxWeek);
+
+            const end = new Date(start);
+            end.setDate(start.getDate() + 6);
+
+            this._oViewModel.setProperty("/weekStart",       start);
+            this._oViewModel.setProperty("/weekStartFilter", sFilter); // exact stored key → finds locked data
+            this._oViewModel.setProperty("/weekRangeLabel",  `${toShortLabel(start)} - ${toShortLabel(end)}`);
+            this._oViewModel.setProperty("/days",            buildDayLabels(start));
+            this._oViewModel.setProperty("/canGoPrev",       start.getTime() > minWeek.getTime());
+            this._oViewModel.setProperty("/canGoNext",       start.getTime() < maxWeek.getTime());
+
+            this._loadTimesheetData();
         },
 
         // ── Week Navigation ──────────────────────────────────────────────────
@@ -207,7 +267,8 @@ sap.ui.define([
                     taskId:      row.taskId || "",
                     projectName: row.projectName,
                     taskName:    row.taskName,
-                    locked:     { mon:false, tue:false, wed:false, thu:false, fri:false, sat:false, sun:false },
+                    locked:   { mon:false, tue:false, wed:false, thu:false, fri:false, sat:false, sun:false },
+                    approved: EMPTY_APPROVED(),
                     _rowLocked: false
                 };
                 DAYS.forEach(d => { r[d] = row[d] > 0 ? this._toHHMM(row[d]) : ""; });
@@ -262,10 +323,39 @@ sap.ui.define([
             this._updateRowCount();
         },
 
+        // ── Save Draft ───────────────────────────────────────────────────────
+
+        onSave() {
+            const rows       = this._oRowsModel.getProperty("/rows");
+            const sWeekStart = this._oViewModel.getProperty("/weekStartFilter");
+
+            const oLocksModel = this.getOwnerComponent().getModel("locked");
+            const allLocks    = oLocksModel.getData();
+            allLocks[sWeekStart] = JSON.parse(JSON.stringify(rows));
+            oLocksModel.setData(allLocks);
+            this.getOwnerComponent().persistLocked();
+
+            MessageToast.show("Draft saved. You can continue filling the rest of the week.");
+        },
+
         // ── Submit ───────────────────────────────────────────────────────────
 
         onSubmit() {
             const rows = this._oRowsModel.getProperty("/rows");
+
+            // Validate: Mon–Fri must all have hours (column totals > 0)
+            const colDec = { mon:0, tue:0, wed:0, thu:0, fri:0 };
+            rows.forEach(r => ["mon","tue","wed","thu","fri"].forEach(d => { colDec[d] += this._parseHHMM(r[d]); }));
+            const missingDays = ["mon","tue","wed","thu","fri"].filter(d => colDec[d] === 0);
+            if (missingDays.length > 0) {
+                const names = { mon:"Monday", tue:"Tuesday", wed:"Wednesday", thu:"Thursday", fri:"Friday" };
+                MessageBox.error(
+                    "Please fill hours for: " + missingDays.map(d => names[d]).join(", ") + ".\n" +
+                    "Monday to Friday must all have hours before submitting.",
+                    { title: "Incomplete Timesheet" }
+                );
+                return;
+            }
 
             // Validate: every row that has new (unlocked) hours must have a task selected
             const invalidRows = rows.filter(r =>
@@ -304,9 +394,10 @@ sap.ui.define([
             const sWeekStart = this._oViewModel.getProperty("/weekStartFilter");
 
             const updatedRows = rows.map(row => {
-                const locked = { ...row.locked };
+                const locked   = { ...row.locked };
+                const approved = { ...(row.approved || EMPTY_APPROVED()) };
                 DAYS.forEach(d => { if (row[d] && row[d] !== "") locked[d] = true; });
-                return { ...row, locked, _rowLocked: DAYS.some(d => locked[d]) };
+                return { ...row, locked, approved, _rowLocked: DAYS.some(d => locked[d]) };
             });
 
             const oLocksModel = this.getOwnerComponent().getModel("locked");
@@ -327,8 +418,8 @@ sap.ui.define([
                 grandTotal:   this._oViewModel.getProperty("/grandTotal"),
                 days:         this._oViewModel.getProperty("/days"),
                 rows:         JSON.parse(JSON.stringify(updatedRows)),
-                status:       existingIdx >= 0 ? submissions[existingIdx].status : "Pending",
-                remarks:      existingIdx >= 0 ? submissions[existingIdx].remarks || "" : ""
+                status:  "Pending",
+                remarks: ""
             };
 
             if (existingIdx >= 0) {
@@ -374,6 +465,10 @@ sap.ui.define([
 
             this._oViewModel.setProperty("/colTotals",  totals);
             this._oViewModel.setProperty("/grandTotal", this._toHHMM(grand));
+
+            // Submit allowed only when Mon–Fri all have hours (weekends optional)
+            const canSubmit = ["mon","tue","wed","thu","fri"].every(d => colDec[d] > 0);
+            this._oViewModel.setProperty("/canSubmit", canSubmit);
         },
 
         _updateRowCount() {
@@ -385,6 +480,10 @@ sap.ui.define([
 
         formatNotLocked(bLocked) {
             return bLocked !== true;
+        },
+
+        formatDayEnabled(bLocked, bFuture) {
+            return bLocked !== true && bFuture !== true;
         },
 
         formatRowTotal(...args) {

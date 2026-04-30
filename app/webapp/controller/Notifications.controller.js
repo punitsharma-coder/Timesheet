@@ -37,6 +37,28 @@ sap.ui.define([
             this._oNotifViewModel.setProperty("/hasNotifications", sorted.length > 0);
         },
 
+        // ── Tap a notification → go to Dashboard for that week ───────────────
+        onNotifPress(oEvent) {
+            const oCtx = oEvent.getParameter("listItem").getBindingContext("notifView");
+            if (!oCtx) return;
+            const notif = oCtx.getObject();
+
+            // Mark this notification as read
+            const oNotifModel = this.getOwnerComponent().getModel("notifications");
+            const items = oNotifModel.getProperty("/items") || [];
+            const idx = items.findIndex(n => n.weekStart === notif.weekStart && n.timestamp === notif.timestamp);
+            if (idx >= 0) {
+                items[idx].read = true;
+                oNotifModel.setProperty("/items", items);
+                this.getOwnerComponent().persistNotifications();
+            }
+
+            // Tell Dashboard which week to open
+            this.getOwnerComponent()._pendingWeekStart = notif.weekStart;
+
+            this.getOwnerComponent().getRouter().navTo("dashboard");
+        },
+
         // ── Mark all read ────────────────────────────────────────────────────
         onMarkAllRead() {
             const oNotifModel = this.getOwnerComponent().getModel("notifications");

@@ -24,7 +24,12 @@ sap.ui.define([
         return d;
     }
 
-    function toDateString(date) { return date.toISOString().split("T")[0]; }
+    function toDateString(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, "0");
+        const d = String(date.getDate()).padStart(2, "0");
+        return `${y}-${m}-${d}`;
+    }
 
     function toShortLabel(date) {
         return date.getDate() + " " + MONTHS[date.getMonth()];
@@ -209,8 +214,9 @@ sap.ui.define([
             if (!weekRows) return;
 
             weekRows.forEach(row => {
-                DAYS.forEach(d => { row.locked[d] = false; });
-                row._rowLocked = false;
+                const approved = row.approved || {};
+                DAYS.forEach(d => { if (!approved[d]) row.locked[d] = false; });
+                row._rowLocked = DAYS.some(d => row.locked[d]);
             });
             oLocksModel.setData(allLocks);
             this.getOwnerComponent().persistLocked();
@@ -221,14 +227,15 @@ sap.ui.define([
             const oNotifModel = this.getOwnerComponent().getModel("notifications");
             const items       = oNotifModel.getProperty("/items") || [];
 
-            // Replace existing notification for same week, or add new one
-            const existing = items.findIndex(n => n.weekStart === sWeekStart);
             const notif = {
                 weekStart: sWeekStart,
-                message:   `Your timesheet for ${sLabel} was rejected by your manager. Please review and resubmit.`,
+                weekRange: sLabel,
+                type:      "rejected",
+                message:   `Your timesheet for ${sLabel} was rejected. Please review and resubmit.`,
                 read:      false,
                 timestamp: new Date().toISOString()
             };
+            const existing = items.findIndex(n => n.weekStart === sWeekStart);
             if (existing >= 0) {
                 items[existing] = notif;
             } else {

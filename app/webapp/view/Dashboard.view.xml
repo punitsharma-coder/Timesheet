@@ -89,7 +89,7 @@
                         </table:label>
                         <table:template>
                             <Input value="{rows>mon}"
-                                enabled="{path:'rows>locked/mon', formatter:'.formatNotLocked'}"
+                                enabled="{parts:[{path:'rows>locked/mon'},{path:'view>/days/0/isFuture'}], formatter:'.formatDayEnabled'}"
                                 valueState="{path:'rows>mon', formatter:'.formatValueState'}"
                                 textAlign="Center" change=".onHoursChange" class="timesheetInput">
                                 <customData><core:CustomData key="day" value="mon" /></customData>
@@ -106,7 +106,7 @@
                         </table:label>
                         <table:template>
                             <Input value="{rows>tue}"
-                                enabled="{path:'rows>locked/tue', formatter:'.formatNotLocked'}"
+                                enabled="{parts:[{path:'rows>locked/tue'},{path:'view>/days/1/isFuture'}], formatter:'.formatDayEnabled'}"
                                 valueState="{path:'rows>tue', formatter:'.formatValueState'}"
                                 textAlign="Center" change=".onHoursChange" class="timesheetInput">
                                 <customData><core:CustomData key="day" value="tue" /></customData>
@@ -123,7 +123,7 @@
                         </table:label>
                         <table:template>
                             <Input value="{rows>wed}"
-                                enabled="{path:'rows>locked/wed', formatter:'.formatNotLocked'}"
+                                enabled="{parts:[{path:'rows>locked/wed'},{path:'view>/days/2/isFuture'}], formatter:'.formatDayEnabled'}"
                                 valueState="{path:'rows>wed', formatter:'.formatValueState'}"
                                 textAlign="Center" change=".onHoursChange" class="timesheetInput">
                                 <customData><core:CustomData key="day" value="wed" /></customData>
@@ -140,7 +140,7 @@
                         </table:label>
                         <table:template>
                             <Input value="{rows>thu}"
-                                enabled="{path:'rows>locked/thu', formatter:'.formatNotLocked'}"
+                                enabled="{parts:[{path:'rows>locked/thu'},{path:'view>/days/3/isFuture'}], formatter:'.formatDayEnabled'}"
                                 valueState="{path:'rows>thu', formatter:'.formatValueState'}"
                                 textAlign="Center" change=".onHoursChange" class="timesheetInput">
                                 <customData><core:CustomData key="day" value="thu" /></customData>
@@ -157,7 +157,7 @@
                         </table:label>
                         <table:template>
                             <Input value="{rows>fri}"
-                                enabled="{path:'rows>locked/fri', formatter:'.formatNotLocked'}"
+                                enabled="{parts:[{path:'rows>locked/fri'},{path:'view>/days/4/isFuture'}], formatter:'.formatDayEnabled'}"
                                 valueState="{path:'rows>fri', formatter:'.formatValueState'}"
                                 textAlign="Center" change=".onHoursChange" class="timesheetInput">
                                 <customData><core:CustomData key="day" value="fri" /></customData>
@@ -174,7 +174,7 @@
                         </table:label>
                         <table:template>
                             <Input value="{rows>sat}"
-                                enabled="{path:'rows>locked/sat', formatter:'.formatNotLocked'}"
+                                enabled="{parts:[{path:'rows>locked/sat'},{path:'view>/days/5/isFuture'}], formatter:'.formatDayEnabled'}"
                                 valueState="{path:'rows>sat', formatter:'.formatValueState'}"
                                 textAlign="Center" change=".onHoursChange" class="timesheetInput">
                                 <customData><core:CustomData key="day" value="sat" /></customData>
@@ -191,7 +191,7 @@
                         </table:label>
                         <table:template>
                             <Input value="{rows>sun}"
-                                enabled="{path:'rows>locked/sun', formatter:'.formatNotLocked'}"
+                                enabled="{parts:[{path:'rows>locked/sun'},{path:'view>/days/6/isFuture'}], formatter:'.formatDayEnabled'}"
                                 valueState="{path:'rows>sun', formatter:'.formatValueState'}"
                                 textAlign="Center" change=".onHoursChange" class="timesheetInput">
                                 <customData><core:CustomData key="day" value="sun" /></customData>
@@ -214,7 +214,14 @@
             <!-- Action Bar -->
             <HBox justifyContent="SpaceBetween" alignItems="Center" class="tsActionBar">
                 <Button text="+ Add Row" type="Emphasized" press=".onAddRow" />
-                <Button text="Submit"    type="Accept"     press=".onSubmit" />
+                <HBox alignItems="Center">
+                    <Button text="Save" icon="sap-icon://save" type="Default"
+                        press=".onSave" class="sapUiSmallMarginEnd"
+                        tooltip="Save your progress without submitting" />
+                    <Button text="Submit" type="Accept" press=".onSubmit"
+                        enabled="{view>/canSubmit}"
+                        tooltip="Fill Mon–Fri hours for all rows before submitting" />
+                </HBox>
             </HBox>
 
         </content>

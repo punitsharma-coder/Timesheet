@@ -40,9 +40,10 @@
                   items="{notifView>/notifications}"
                   mode="None"
                   showSeparators="Inner"
+                  itemPress=".onNotifPress"
                   class="tsNotifList">
 
-                <CustomListItem type="Inactive" class="tsNotifItem">
+                <CustomListItem type="Navigation" class="tsNotifItem">
 
                     <HBox alignItems="Center" class="tsNotifCard">
 
