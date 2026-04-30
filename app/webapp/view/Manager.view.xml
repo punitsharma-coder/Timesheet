@@ -1,0 +1,264 @@
+<mvc:View
+    controllerName="timesheet.app.controller.Manager"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:table="sap.ui.table"
+    xmlns:core="sap.ui.core"
+    displayBlock="true">
+
+    <Page id="managerPage"
+          title="{mgrView>/pageTitle}"
+          showNavButton="{mgrView>/showDetail}"
+          navButtonPress=".onNavBack"
+          class="tsDashboardPage"
+          enableScrolling="true">
+
+        <content>
+
+            <!-- ════════════════════════════════════════════════════════════
+                 STATE 1 — Full-width approval queue (list view)
+                 ════════════════════════════════════════════════════════════ -->
+            <VBox visible="{= !${mgrView>/showDetail} }" class="tsMgrListView">
+
+                <!-- Toolbar: pending badge + filter -->
+                <HBox class="tsMgrListToolbar" alignItems="Center" justifyContent="SpaceBetween">
+                    <HBox alignItems="Center">
+                        <core:Icon src="sap-icon://approvals" class="tsMgrToolbarIcon" />
+                        <Title text="Pending Approvals" level="H4" class="sapUiSmallMarginBegin" />
+                    </HBox>
+                    <ObjectStatus
+                        visible="{= ${mgrView>/pendingCount} > 0 }"
+                        text="{mgrView>/pendingCount} pending"
+                        state="Warning"
+                        icon="sap-icon://alert" />
+                </HBox>
+
+                <!-- Filter tabs -->
+                <SegmentedButton id="statusFilter" selectedKey="Pending"
+                    selectionChange=".onFilterChange" class="tsMgrFilter">
+                    <items>
+                        <SegmentedButtonItem key="Pending"  text="Pending"  />
+                        <SegmentedButtonItem key="All"      text="All"      />
+                        <SegmentedButtonItem key="Approved" text="Approved" />
+                        <SegmentedButtonItem key="Rejected" text="Rejected" />
+                    </items>
+                </SegmentedButton>
+
+                <!-- Full-width submission cards -->
+                <List id="approvalList"
+                      mode="None"
+                      items="{mgrView>/submissions}"
+                      noDataText="No timesheets found for this filter."
+                      itemPress=".onApprovalSelect"
+                      class="tsMgrApprovalList">
+
+                    <CustomListItem type="Navigation" class="tsMgrListItem">
+                        <HBox class="tsMgrCard" alignItems="Center" justifyContent="SpaceBetween">
+
+                            <!-- Left: employee + week info -->
+                            <VBox class="tsMgrCardLeft">
+                                <HBox alignItems="Center">
+                                    <core:Icon src="sap-icon://employee" class="tsMgrCardIcon" />
+                                    <Text text="{mgrView>employeeName}" class="tsMgrCardName sapUiTinyMarginBegin" />
+                                    <ObjectStatus
+                                        text="{mgrView>status}"
+                                        state="{path:'mgrView>status', formatter:'.formatStatusState'}"
+                                        class="sapUiSmallMarginBegin" />
+                                </HBox>
+                                <Text text="{mgrView>weekRange}" class="tsMgrCardWeek" />
+                                <Text text="Submitted: {mgrView>submittedOn}" class="tsMgrCardDate" />
+                            </VBox>
+
+                            <!-- Right: total hours -->
+                            <VBox alignItems="End" class="tsMgrCardRight">
+                                <Text text="{mgrView>grandTotal}" class="tsMgrCardHours" />
+                                <Text text="Total hrs" class="tsMgrCardDate" />
+                            </VBox>
+
+                        </HBox>
+                    </CustomListItem>
+
+                </List>
+
+            </VBox>
+
+            <!-- ════════════════════════════════════════════════════════════
+                 STATE 2 — Full-width timesheet detail + approve/reject
+                 ════════════════════════════════════════════════════════════ -->
+            <VBox visible="{mgrView>/showDetail}" class="tsMgrDetailView">
+
+                <!-- Detail header: employee info + action buttons -->
+                <HBox class="tsMgrDetailHeader" justifyContent="SpaceBetween" alignItems="Center">
+                    <VBox>
+                        <HBox alignItems="Center">
+                            <core:Icon src="sap-icon://employee" size="1.2rem" class="tsMgrDetailIcon" />
+                            <Title text="{mgrView>/selectedEmployee}" level="H4" class="sapUiTinyMarginBegin" />
+                        </HBox>
+                        <HBox alignItems="Center" class="sapUiTinyMarginTop">
+                            <Text text="{mgrView>/selectedWeek}" class="tsMgrDetailWeek" />
+                            <ObjectStatus
+                                text="{mgrView>/selectedStatus}"
+                                state="{path:'mgrView>/selectedStatus', formatter:'.formatStatusState'}"
+                                class="sapUiSmallMarginBegin" />
+                        </HBox>
+                        <Text text="Submitted: {mgrView>/selectedSubmittedOn}" class="tsMgrDetailDate" />
+                    </VBox>
+
+                    <HBox class="tsMgrActionBtns">
+                        <Button text="Approve" type="Accept" icon="sap-icon://accept"
+                            enabled="{= ${mgrView>/selectedStatus} === 'Pending' }"
+                            press=".onApprove" />
+                        <Button text="Reject" type="Reject" icon="sap-icon://decline"
+                            enabled="{= ${mgrView>/selectedStatus} === 'Pending' }"
+                            press=".onReject"
+                            class="sapUiSmallMarginBegin" />
+                    </HBox>
+                </HBox>
+
+                <!-- Rejection reason strip (shown after rejection) -->
+                <MessageStrip
+                    visible="{= !!${mgrView>/selectedRemarks} }"
+                    text="{= 'Rejection reason: ' + ${mgrView>/selectedRemarks} }"
+                    type="Error"
+                    showIcon="true"
+                    showCloseButton="false"
+                    class="sapUiSmallMarginBeginEnd sapUiSmallMarginBottom" />
+
+                <!-- Read-only timesheet table -->
+                <table:Table
+                    id="mgrTable"
+                    rows="{mgrView>/rows}"
+                    visibleRowCountMode="Fixed"
+                    visibleRowCount="{mgrView>/rowCount}"
+                    selectionMode="None"
+                    alternateRowColors="false"
+                    fixedColumnCount="1"
+                    class="timesheetTable"
+                    rowHeight="48">
+
+                    <table:noData>
+                        <Text text="No timesheet data." class="sapUiMediumMargin" />
+                    </table:noData>
+
+                    <table:columns>
+
+                        <table:Column width="180px">
+                            <table:label><Label text="Project / Task" /></table:label>
+                            <table:template>
+                                <VBox class="tsProjectCell">
+                                    <Text text="{mgrView>projectName}"
+                                        class="{path:'mgrView>_type', formatter:'.formatProjectClass'}"
+                                        wrapping="false" />
+                                    <Text text="{mgrView>taskName}" class="tsTaskName" wrapping="false" />
+                                </VBox>
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column hAlign="Center" width="100px">
+                            <table:label>
+                                <VBox alignItems="Center" class="tsColHeaderBox">
+                                    <Text text="{mgrView>/days/0/name}" class="tsDayName" />
+                                    <Text text="{mgrView>/days/0/date}" class="tsDayDate" />
+                                </VBox>
+                            </table:label>
+                            <table:template>
+                                <Text text="{mgrView>mon}" textAlign="Center"
+                                    class="{parts:[{path:'mgrView>mon'},{path:'mgrView>_type'}], formatter:'.formatDayCellClass'}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column hAlign="Center" width="100px">
+                            <table:label>
+                                <VBox alignItems="Center" class="tsColHeaderBox">
+                                    <Text text="{mgrView>/days/1/name}" class="tsDayName" />
+                                    <Text text="{mgrView>/days/1/date}" class="tsDayDate" />
+                                </VBox>
+                            </table:label>
+                            <table:template>
+                                <Text text="{mgrView>tue}" textAlign="Center"
+                                    class="{parts:[{path:'mgrView>tue'},{path:'mgrView>_type'}], formatter:'.formatDayCellClass'}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column hAlign="Center" width="100px">
+                            <table:label>
+                                <VBox alignItems="Center" class="tsColHeaderBox">
+                                    <Text text="{mgrView>/days/2/name}" class="tsDayName" />
+                                    <Text text="{mgrView>/days/2/date}" class="tsDayDate" />
+                                </VBox>
+                            </table:label>
+                            <table:template>
+                                <Text text="{mgrView>wed}" textAlign="Center"
+                                    class="{parts:[{path:'mgrView>wed'},{path:'mgrView>_type'}], formatter:'.formatDayCellClass'}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column hAlign="Center" width="100px">
+                            <table:label>
+                                <VBox alignItems="Center" class="tsColHeaderBox">
+                                    <Text text="{mgrView>/days/3/name}" class="tsDayName" />
+                                    <Text text="{mgrView>/days/3/date}" class="tsDayDate" />
+                                </VBox>
+                            </table:label>
+                            <table:template>
+                                <Text text="{mgrView>thu}" textAlign="Center"
+                                    class="{parts:[{path:'mgrView>thu'},{path:'mgrView>_type'}], formatter:'.formatDayCellClass'}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column hAlign="Center" width="100px">
+                            <table:label>
+                                <VBox alignItems="Center" class="tsColHeaderBox">
+                                    <Text text="{mgrView>/days/4/name}" class="tsDayName" />
+                                    <Text text="{mgrView>/days/4/date}" class="tsDayDate" />
+                                </VBox>
+                            </table:label>
+                            <table:template>
+                                <Text text="{mgrView>fri}" textAlign="Center"
+                                    class="{parts:[{path:'mgrView>fri'},{path:'mgrView>_type'}], formatter:'.formatDayCellClass'}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column hAlign="Center" width="100px">
+                            <table:label>
+                                <VBox alignItems="Center" class="tsColHeaderBox">
+                                    <Text text="{mgrView>/days/5/name}" class="tsDayName" />
+                                    <Text text="{mgrView>/days/5/date}" class="tsDayDate" />
+                                </VBox>
+                            </table:label>
+                            <table:template>
+                                <Text text="{mgrView>sat}" textAlign="Center"
+                                    class="{parts:[{path:'mgrView>sat'},{path:'mgrView>_type'}], formatter:'.formatDayCellClass'}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column hAlign="Center" width="100px">
+                            <table:label>
+                                <VBox alignItems="Center" class="tsColHeaderBox">
+                                    <Text text="{mgrView>/days/6/name}" class="tsDayName" />
+                                    <Text text="{mgrView>/days/6/date}" class="tsDayDate" />
+                                </VBox>
+                            </table:label>
+                            <table:template>
+                                <Text text="{mgrView>sun}" textAlign="Center"
+                                    class="{parts:[{path:'mgrView>sun'},{path:'mgrView>_type'}], formatter:'.formatDayCellClass'}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column hAlign="Center" width="110px">
+                            <table:label><Label text="Week Total(Hrs)" /></table:label>
+                            <table:template>
+                                <Text text="{mgrView>_weekTotal}" textAlign="Center"
+                                    class="{path:'mgrView>_type', formatter:'.formatWeekTotalClass'}" />
+                            </table:template>
+                        </table:Column>
+
+                    </table:columns>
+                </table:Table>
+
+            </VBox>
+
+        </content>
+    </Page>
+
+</mvc:View>

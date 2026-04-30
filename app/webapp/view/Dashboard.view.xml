@@ -32,16 +32,6 @@
 
         <content>
 
-            <!-- Rejection notification banner (visible only when manager rejected the current week) -->
-            <MessageStrip
-                text="{view>/notifMessage}"
-                type="Error"
-                showIcon="true"
-                showCloseButton="true"
-                visible="{view>/notifVisible}"
-                close=".onNotifClose"
-                class="sapUiSmallMarginBeginEnd sapUiSmallMarginTop" />
-
             <!-- Week Navigator -->
             <Toolbar class="tsWeekNav sapUiSmallMarginBottom" style="Clear">
                 <Title id="weekRangeTitle" text="{view>/weekRangeLabel}" level="H4" />

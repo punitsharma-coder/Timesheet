@@ -58,6 +58,17 @@ html, body { margin: 0; overflow: hidden; }
     color: #60a5fa !important;
 }
 
+/* Active nav item highlight (replaces SingleSelectMaster selection since lists use mode="None") */
+.timesheetSidebar .tsNavItemActive {
+    background-color: rgba(96,165,250,0.15) !important;
+    border-left: 3px solid #60a5fa !important;
+}
+
+.timesheetSidebar .tsNavItemActive .sapMSLITitle,
+.timesheetSidebar .tsNavItemActive .sapUiIcon {
+    color: #60a5fa !important;
+}
+
 .timesheetSidebar .sapMListHdr,
 .timesheetSidebar .sapMListHdrText {
     background-color: #111827 !important;
@@ -403,4 +414,211 @@ html, body { margin: 0; overflow: hidden; }
     color: #6b7280;
     font-size: 0.875rem;
     max-width: 300px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Manager Approvals page
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── List view (full-width) ────────────────────────────────────────── */
+.tsMgrListView {
+    width: 100%;
+}
+
+.tsMgrListToolbar {
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid #e5e7eb;
+    background: #fff;
+}
+
+.tsMgrToolbarIcon {
+    color: #3b82f6;
+    font-size: 1.1rem;
+}
+
+.tsMgrFilter {
+    margin: 0.5rem 1.25rem;
+}
+
+/* Full-width list item card */
+.tsMgrListItem {
+    border-bottom: 1px solid #e5e7eb !important;
+    padding: 0 !important;
+}
+
+.tsMgrCard {
+    padding: 1rem 1.25rem;
+    width: 100%;
+    min-height: 76px;
+}
+
+.tsMgrCardLeft {
+    flex: 1;
+    gap: 4px;
+}
+
+.tsMgrCardRight {
+    flex-shrink: 0;
+    padding-left: 1rem;
+}
+
+.tsMgrCardIcon {
+    color: #6b7280;
+    font-size: 1rem;
+}
+
+.tsMgrCardName {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.tsMgrCardWeek {
+    font-size: 0.83rem;
+    color: #374151;
+    font-weight: 500;
+}
+
+.tsMgrCardDate {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.tsMgrCardHours {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1d4ed8;
+}
+
+/* Hover / press highlight on cards */
+.tsMgrListItem:hover .tsMgrCard {
+    background: #f0f7ff;
+}
+
+/* ── Detail view (full-width, shown after card tap) ────────────────── */
+.tsMgrDetailView {
+    width: 100%;
+}
+
+.tsMgrDetailHeader {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #e5e7eb;
+    background: #fff;
+}
+
+.tsMgrDetailIcon {
+    color: #6b7280;
+}
+
+.tsMgrDetailWeek {
+    font-size: 0.85rem;
+    color: #374151;
+    font-weight: 500;
+}
+
+.tsMgrDetailDate {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+.tsMgrActionBtns {
+    gap: 0.5rem;
+}
+
+/* Sidebar: Manager section header colour */
+.timesheetSidebar #managerNavList .sapMListHdrTxt {
+    color: #60a5fa !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Notifications page
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.tsNotifSubtitle {
+    font-size: 0.78rem;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+/* Empty state */
+.tsNotifEmpty {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 5rem 2rem;
+}
+
+.tsNotifEmptyHint {
+    color: #9ca3af;
+    font-size: 0.875rem;
+    max-width: 320px;
+    margin-top: 4px;
+}
+
+/* List */
+.tsNotifList {
+    background: transparent !important;
+}
+
+.tsNotifItem {
+    padding: 0 !important;
+    border-bottom: 1px solid #f3f4f6 !important;
+    background: #fff !important;
+}
+
+.tsNotifItem:hover {
+    background: #f9fafb !important;
+}
+
+/* Card layout */
+.tsNotifCard {
+    padding: 1rem 1.25rem;
+    width: 100%;
+    gap: 0;
+}
+
+/* Left icon column */
+.tsNotifIconWrap {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #f3f4f6;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+}
+
+/* Body */
+.tsNotifBody {
+    flex: 1;
+    min-width: 0;
+    gap: 4px;
+}
+
+.tsNotifBadge {
+    font-size: 0.75rem !important;
+}
+
+.tsNotifMessage {
+    font-size: 0.875rem;
+    color: #111827;
+    line-height: 1.4;
+}
+
+.tsNotifTime {
+    font-size: 0.72rem;
+    color: #9ca3af;
+}
+
+/* Unread dot column */
+.tsNotifDotWrap {
+    width: 20px;
+    flex-shrink: 0;
+    margin-left: 0.5rem;
+}
+
+.tsNotifUnreadDot {
+    font-size: 0.55rem !important;
 }

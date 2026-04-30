@@ -23,28 +23,48 @@
         <masterPages>
             <Page id="navPage" showHeader="false" class="timesheetSidebar">
 
-                <List id="mainNavList" selectionChange=".onNavSelect" mode="SingleSelectMaster">
+                <!-- Employee section -->
+                <List id="mainNavList" headerText="Employee" mode="None">
                     <items>
-                        <StandardListItem title="Dashboard" icon="sap-icon://home" type="Active">
+                        <StandardListItem title="Dashboard" icon="sap-icon://home" type="Active"
+                            press=".onNavSelect">
                             <customData><core:CustomData key="target" value="dashboard" /></customData>
                         </StandardListItem>
-                        <StandardListItem title="Timesheet" icon="sap-icon://calendar" type="Active">
+                        <StandardListItem title="Timesheet" icon="sap-icon://calendar" type="Active"
+                            press=".onNavSelect">
                             <customData><core:CustomData key="target" value="dashboard" /></customData>
                         </StandardListItem>
-                        <StandardListItem title="My Wallet" icon="sap-icon://wallet" type="Active">
+                        <StandardListItem title="My Wallet" icon="sap-icon://wallet" type="Active"
+                            press=".onNavSelect">
                             <customData><core:CustomData key="target" value="dashboard" /></customData>
                         </StandardListItem>
-                        <StandardListItem title="Timesheet History" icon="sap-icon://history" type="Active">
+                        <StandardListItem title="Timesheet History" icon="sap-icon://history" type="Active"
+                            press=".onNavSelect">
                             <customData><core:CustomData key="target" value="history" /></customData>
+                        </StandardListItem>
+                    </items>
+                </List>
+
+                <!-- Manager section (role-restricted in production) -->
+                <List id="managerNavList" headerText="Manager" mode="None">
+                    <items>
+                        <StandardListItem title="Approvals" icon="sap-icon://approvals" type="Active"
+                            press=".onNavSelect">
+                            <customData><core:CustomData key="target" value="manager" /></customData>
                         </StandardListItem>
                     </items>
                 </List>
 
                 <List id="accountNavList" headerText="Account" mode="None">
                     <items>
-                        <StandardListItem title="Notifications" icon="sap-icon://bell" />
-                        <StandardListItem title="Settings"      icon="sap-icon://action-settings" />
-                        <StandardListItem title="FAQ"           icon="sap-icon://sys-help" />
+                        <StandardListItem title="Notifications" icon="sap-icon://bell" type="Active"
+                            info="{= ${appView>/unreadCount} > 0 ? String(${appView>/unreadCount}) : '' }"
+                            infoState="Error"
+                            press=".onNavSelect">
+                            <customData><core:CustomData key="target" value="notifications" /></customData>
+                        </StandardListItem>
+                        <StandardListItem title="Settings" icon="sap-icon://action-settings" />
+                        <StandardListItem title="FAQ"      icon="sap-icon://sys-help" />
                     </items>
                 </List>
 

@@ -66,9 +66,7 @@ sap.ui.define([
                 canGoNext:       false,
                 days:            [],
                 colTotals: { mon:"0:00", tue:"0:00", wed:"0:00", thu:"0:00",
-                             fri:"0:00", sat:"0:00", sun:"0:00", total:"0:00" },
-                notifVisible:    false,
-                notifMessage:    ""
+                             fri:"0:00", sat:"0:00", sun:"0:00", total:"0:00" }
             });
             this.getView().setModel(this._oViewModel, "view");
 
@@ -118,7 +116,6 @@ sap.ui.define([
             this._oViewModel.setProperty("/canGoNext",       start.getTime() < maxWeek.getTime());
 
             this._loadTimesheetData();
-            this._checkRejectionNotif(toDateString(start));
         },
 
         // ── Calendar Popover ─────────────────────────────────────────────────
@@ -265,38 +262,6 @@ sap.ui.define([
             this._updateRowCount();
         },
 
-        // ── Rejection notification ────────────────────────────────────────────
-
-        _checkRejectionNotif(sWeekStart) {
-            const oNotifModel = this.getOwnerComponent().getModel("notifications");
-            const items = oNotifModel.getProperty("/items") || [];
-            const notif = items.find(n => n.weekStart === sWeekStart && !n.read);
-            if (notif) {
-                this._oViewModel.setProperty("/notifMessage", notif.message);
-                this._oViewModel.setProperty("/notifVisible", true);
-                this._currentNotifWeek = sWeekStart;
-            } else {
-                this._oViewModel.setProperty("/notifVisible", false);
-                this._oViewModel.setProperty("/notifMessage", "");
-                this._currentNotifWeek = null;
-            }
-        },
-
-        onNotifClose() {
-            if (this._currentNotifWeek) {
-                const oNotifModel = this.getOwnerComponent().getModel("notifications");
-                const items = oNotifModel.getProperty("/items") || [];
-                const notif = items.find(n => n.weekStart === this._currentNotifWeek);
-                if (notif) {
-                    notif.read = true;
-                    oNotifModel.setProperty("/items", items);
-                    this.getOwnerComponent().persistNotifications();
-                }
-                this._currentNotifWeek = null;
-            }
-            this._oViewModel.setProperty("/notifVisible", false);
-        },
-
         // ── Submit ───────────────────────────────────────────────────────────
 
         onSubmit() {
@@ -338,17 +303,6 @@ sap.ui.define([
         _doSubmit(rows) {
             const sWeekStart = this._oViewModel.getProperty("/weekStartFilter");
 
-            // Clear any rejection notification for this week when resubmitting
-            const oNotifModel = this.getOwnerComponent().getModel("notifications");
-            const notifItems  = oNotifModel.getProperty("/items") || [];
-            const notifIdx    = notifItems.findIndex(n => n.weekStart === sWeekStart);
-            if (notifIdx >= 0) {
-                notifItems[notifIdx].read = true;
-                oNotifModel.setProperty("/items", notifItems);
-                this.getOwnerComponent().persistNotifications();
-            }
-            this._oViewModel.setProperty("/notifVisible", false);
-
             const updatedRows = rows.map(row => {
                 const locked = { ...row.locked };
                 DAYS.forEach(d => { if (row[d] && row[d] !== "") locked[d] = true; });
@@ -366,13 +320,15 @@ sap.ui.define([
             const submissions   = oHistoryModel.getProperty("/submissions");
             const existingIdx   = submissions.findIndex(s => s.weekStart === sWeekStart);
             const record = {
-                weekRange:   this._oViewModel.getProperty("/weekRangeLabel"),
-                weekStart:   sWeekStart,
-                submittedOn: new Date().toLocaleString(),
-                grandTotal:  this._oViewModel.getProperty("/grandTotal"),
-                days:        this._oViewModel.getProperty("/days"),
-                rows:        JSON.parse(JSON.stringify(updatedRows)),
-                status:      existingIdx >= 0 ? submissions[existingIdx].status : "Pending"
+                employeeName: "Employee",          // replaced by logged-in user name when auth is added
+                weekRange:    this._oViewModel.getProperty("/weekRangeLabel"),
+                weekStart:    sWeekStart,
+                submittedOn:  new Date().toLocaleString(),
+                grandTotal:   this._oViewModel.getProperty("/grandTotal"),
+                days:         this._oViewModel.getProperty("/days"),
+                rows:         JSON.parse(JSON.stringify(updatedRows)),
+                status:       existingIdx >= 0 ? submissions[existingIdx].status : "Pending",
+                remarks:      existingIdx >= 0 ? submissions[existingIdx].remarks || "" : ""
             };
 
             if (existingIdx >= 0) {

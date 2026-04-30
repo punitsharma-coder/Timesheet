@@ -63,17 +63,21 @@
                 "routerClass":        "sap.m.routing.Router",
                 "viewType":           "XML",
                 "viewPath":           "timesheet.app.view",
-                "controlAggregation": "detailPages",
-                "controlId":          "app",
+                "controlAggregation": "pages",
+                "controlId":          "detailNav",
                 "transition":         "slide"
             },
             "routes": [
-                { "name": "dashboard", "pattern": "",        "target": "dashboard" },
-                { "name": "history",   "pattern": "history", "target": "history"   }
+                { "name": "dashboard",     "pattern": "",              "target": "dashboard"     },
+                { "name": "history",       "pattern": "history",       "target": "history"       },
+                { "name": "manager",       "pattern": "manager",       "target": "manager"       },
+                { "name": "notifications", "pattern": "notifications", "target": "notifications" }
             ],
             "targets": {
-                "dashboard": { "viewName": "Dashboard", "viewId": "dashboard" },
-                "history":   { "viewName": "History",   "viewId": "history"   }
+                "dashboard":     { "viewName": "Dashboard",     "viewId": "dashboard"     },
+                "history":       { "viewName": "History",       "viewId": "history"       },
+                "manager":       { "viewName": "Manager",       "viewId": "manager"       },
+                "notifications": { "viewName": "Notifications", "viewId": "notifications" }
             }
         }
     }
