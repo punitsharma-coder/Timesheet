@@ -13,7 +13,7 @@ sap.ui.define([
     const MONTHS    = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
     const EMPTY_ROW = () => ({
-        projectName: "", taskName: "",
+        projectName: "", taskName: "", taskId: "",
         mon:"", tue:"", wed:"", thu:"", fri:"", sat:"", sun:"",
         locked:     { mon:false, tue:false, wed:false, thu:false, fri:false, sat:false, sun:false },
         _rowLocked: false
@@ -66,14 +66,20 @@ sap.ui.define([
                 canGoNext:       false,
                 days:            [],
                 colTotals: { mon:"0:00", tue:"0:00", wed:"0:00", thu:"0:00",
-                             fri:"0:00", sat:"0:00", sun:"0:00", total:"0:00" }
+                             fri:"0:00", sat:"0:00", sun:"0:00", total:"0:00" },
+                notifVisible:    false,
+                notifMessage:    ""
             });
             this.getView().setModel(this._oViewModel, "view");
 
             this._oRowsModel = new JSONModel({ rows: [EMPTY_ROW()] });
             this.getView().setModel(this._oRowsModel, "rows");
 
+            this._oTasksModel = new JSONModel([]);
+            this.getView().setModel(this._oTasksModel, "tasks");
+
             this._setWeek(new Date());
+            this._loadTasks();
         },
 
         // ── Week Navigation ──────────────────────────────────────────────────
@@ -112,6 +118,7 @@ sap.ui.define([
             this._oViewModel.setProperty("/canGoNext",       start.getTime() < maxWeek.getTime());
 
             this._loadTimesheetData();
+            this._checkRejectionNotif(toDateString(start));
         },
 
         // ── Calendar Popover ─────────────────────────────────────────────────
@@ -191,7 +198,7 @@ sap.ui.define([
                 const taskDesc = entry.task?.taskDescription ?? "";
 
                 if (!rowMap.has(taskId)) {
-                    rowMap.set(taskId, { projectName: taskName, taskName: taskDesc,
+                    rowMap.set(taskId, { taskId, projectName: taskName, taskName: taskDesc,
                         mon:0, tue:0, wed:0, thu:0, fri:0, sat:0, sun:0 });
                 }
                 const idx = weekDates.indexOf(entry.workDate);
@@ -200,7 +207,9 @@ sap.ui.define([
 
             return Array.from(rowMap.values()).map(row => {
                 const r = {
-                    projectName: row.projectName, taskName: row.taskName,
+                    taskId:      row.taskId || "",
+                    projectName: row.projectName,
+                    taskName:    row.taskName,
                     locked:     { mon:false, tue:false, wed:false, thu:false, fri:false, sat:false, sun:false },
                     _rowLocked: false
                 };
@@ -209,27 +218,41 @@ sap.ui.define([
             });
         },
 
-        // Apply future-date locks: days after today are not fillable
-        _applyFutureLocks(rows) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const weekStart = this._oViewModel.getProperty("/weekStart");
+        // ── Task Dropdown ─────────────────────────────────────────────────────
 
-            return rows.map(row => {
-                const locked = { ...row.locked };
-                DAYS.forEach((d, i) => {
-                    const dayDate = new Date(weekStart);
-                    dayDate.setDate(weekStart.getDate() + i);
-                    if (dayDate > today) locked[d] = true;
-                });
-                return { ...row, locked, _rowLocked: DAYS.every(d => locked[d]) };
-            });
+        _loadTasks() {
+            const oModel = this.getOwnerComponent().getModel();
+            oModel.bindList("/MyTasks").requestContexts(0, 200)
+                .then(aCtx => {
+                    this._oTasksModel.setData(aCtx.map(c => c.getObject()));
+                })
+                .catch(() => { /* no tasks available — dropdown stays empty */ });
+        },
+
+        onTaskSelect(oEvent) {
+            const oComboBox = oEvent.getSource();
+            const sKey      = oComboBox.getSelectedKey();
+            const oContext  = oComboBox.getBindingContext("rows");
+            if (!oContext) return;
+
+            const sPath = oContext.getPath();
+            if (sKey) {
+                const task = this._oTasksModel.getData().find(t => t.taskId === sKey);
+                if (task) {
+                    this._oRowsModel.setProperty(sPath + "/taskId",      task.taskId);
+                    this._oRowsModel.setProperty(sPath + "/projectName", task.taskName);
+                    this._oRowsModel.setProperty(sPath + "/taskName",    task.taskDescription || "");
+                }
+            } else {
+                this._oRowsModel.setProperty(sPath + "/taskId",      "");
+                this._oRowsModel.setProperty(sPath + "/projectName", "");
+                this._oRowsModel.setProperty(sPath + "/taskName",    "");
+            }
         },
 
         _setRows(rows) {
-            const lockedRows = this._applyFutureLocks(rows);
-            this._oRowsModel.setProperty("/rows", lockedRows);
-            this._refreshTotals(lockedRows);
+            this._oRowsModel.setProperty("/rows", rows);
+            this._refreshTotals(rows);
             this._updateRowCount();
         },
 
@@ -239,14 +262,59 @@ sap.ui.define([
             const rows = this._oRowsModel.getProperty("/rows");
             rows.push(EMPTY_ROW());
             this._oRowsModel.setProperty("/rows", rows);
-            this._applyFutureLocks(rows);
             this._updateRowCount();
+        },
+
+        // ── Rejection notification ────────────────────────────────────────────
+
+        _checkRejectionNotif(sWeekStart) {
+            const oNotifModel = this.getOwnerComponent().getModel("notifications");
+            const items = oNotifModel.getProperty("/items") || [];
+            const notif = items.find(n => n.weekStart === sWeekStart && !n.read);
+            if (notif) {
+                this._oViewModel.setProperty("/notifMessage", notif.message);
+                this._oViewModel.setProperty("/notifVisible", true);
+                this._currentNotifWeek = sWeekStart;
+            } else {
+                this._oViewModel.setProperty("/notifVisible", false);
+                this._oViewModel.setProperty("/notifMessage", "");
+                this._currentNotifWeek = null;
+            }
+        },
+
+        onNotifClose() {
+            if (this._currentNotifWeek) {
+                const oNotifModel = this.getOwnerComponent().getModel("notifications");
+                const items = oNotifModel.getProperty("/items") || [];
+                const notif = items.find(n => n.weekStart === this._currentNotifWeek);
+                if (notif) {
+                    notif.read = true;
+                    oNotifModel.setProperty("/items", items);
+                    this.getOwnerComponent().persistNotifications();
+                }
+                this._currentNotifWeek = null;
+            }
+            this._oViewModel.setProperty("/notifVisible", false);
         },
 
         // ── Submit ───────────────────────────────────────────────────────────
 
         onSubmit() {
-            const rows   = this._oRowsModel.getProperty("/rows");
+            const rows = this._oRowsModel.getProperty("/rows");
+
+            // Validate: every row that has new (unlocked) hours must have a task selected
+            const invalidRows = rows.filter(r =>
+                DAYS.some(d => r[d] && r[d] !== "" && !r.locked[d]) && !r.taskId
+            );
+            if (invalidRows.length > 0) {
+                MessageBox.error(
+                    `${invalidRows.length} row(s) have hours entered but no task selected.\n` +
+                    "Please choose a task from the dropdown for each filled row before submitting.",
+                    { title: "Task Required" }
+                );
+                return;
+            }
+
             const hasNew = rows.some(r => DAYS.some(d => r[d] && !r.locked[d]));
 
             if (!hasNew) {
@@ -255,9 +323,10 @@ sap.ui.define([
             }
 
             MessageBox.confirm(
-                `Submit timesheet for ${this._oViewModel.getProperty("/weekRangeLabel")}?\n` +
-                "Submitted days will be locked and cannot be edited.",
+                `Send timesheet for ${this._oViewModel.getProperty("/weekRangeLabel")} for approval?\n` +
+                "Your timesheet will be sent to your manager for review.",
                 {
+                    title:    "Send for Approval",
                     actions:  [MessageBox.Action.OK, MessageBox.Action.CANCEL],
                     onClose: (sAction) => {
                         if (sAction === MessageBox.Action.OK) this._doSubmit(rows);
@@ -268,6 +337,17 @@ sap.ui.define([
 
         _doSubmit(rows) {
             const sWeekStart = this._oViewModel.getProperty("/weekStartFilter");
+
+            // Clear any rejection notification for this week when resubmitting
+            const oNotifModel = this.getOwnerComponent().getModel("notifications");
+            const notifItems  = oNotifModel.getProperty("/items") || [];
+            const notifIdx    = notifItems.findIndex(n => n.weekStart === sWeekStart);
+            if (notifIdx >= 0) {
+                notifItems[notifIdx].read = true;
+                oNotifModel.setProperty("/items", notifItems);
+                this.getOwnerComponent().persistNotifications();
+            }
+            this._oViewModel.setProperty("/notifVisible", false);
 
             const updatedRows = rows.map(row => {
                 const locked = { ...row.locked };
@@ -305,7 +385,7 @@ sap.ui.define([
             this.getOwnerComponent().persistHistory();
             this.getOwnerComponent().persistLocked();
 
-            MessageToast.show("Submitted! Filled days are now locked.");
+            MessageToast.show("Sent for approval! Your manager will review your timesheet.");
         },
 
         // ── Cell Change ───────────────────────────────────────────────────────

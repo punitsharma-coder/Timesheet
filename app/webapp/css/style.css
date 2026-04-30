@@ -129,12 +129,19 @@ html, body { margin: 0; overflow: hidden; }
     color: #6b7280;
 }
 
-/* ── Project / Task inline inputs ──────────────────────────────── */
+/* ── Project / Task inline inputs & combo ──────────────────────── */
 .tsProjectInput.sapMInputBase,
+.tsProjectInput.sapMComboBox,
 .tsTaskInput.sapMInputBase {
     border: 1px solid transparent;
     background: transparent;
     border-radius: 4px;
+    height: 22px;
+    min-height: 22px;
+    width: 100%;
+}
+
+.tsProjectInput.sapMComboBox .sapMInputBaseContentWrapper {
     height: 22px;
     min-height: 22px;
 }
@@ -371,4 +378,29 @@ html, body { margin: 0; overflow: hidden; }
 
 .tsHistContainer {
     padding: 0;
+}
+
+/* ── History: initial "pick a week" centered calendar ────────────────── */
+.tsHistWelcome {
+    width: 100%;
+    height: calc(100vh - 108px);   /* full remaining height under the page header */
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.tsHistWelcomeCard {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 2rem 2.5rem 2.5rem;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+    align-items: center !important;
+    text-align: center;
+}
+
+.tsHistWelcomeHint {
+    color: #6b7280;
+    font-size: 0.875rem;
+    max-width: 300px;
 }

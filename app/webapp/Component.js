@@ -13,8 +13,9 @@ sap.ui.define([
             UIComponent.prototype.init.apply(this, arguments);
 
             // Restore persisted data so history survives page refresh
-            this.setModel(new JSONModel(this._fromStorage("tsHistory", { submissions: [] })), "history");
-            this.setModel(new JSONModel(this._fromStorage("tsLocked",  {})), "locked");
+            this.setModel(new JSONModel(this._fromStorage("tsHistory",        { submissions: [] })), "history");
+            this.setModel(new JSONModel(this._fromStorage("tsLocked",         {})),                  "locked");
+            this.setModel(new JSONModel(this._fromStorage("tsNotifications",  { items: [] })),        "notifications");
 
             this.getRouter().initialize();
         },
@@ -27,11 +28,15 @@ sap.ui.define([
         },
 
         persistHistory() {
-            try { localStorage.setItem("tsHistory", JSON.stringify(this.getModel("history").getData())); } catch (e) {}
+            try { localStorage.setItem("tsHistory",       JSON.stringify(this.getModel("history").getData()));       } catch (e) {}
         },
 
         persistLocked() {
-            try { localStorage.setItem("tsLocked",  JSON.stringify(this.getModel("locked").getData()));  } catch (e) {}
+            try { localStorage.setItem("tsLocked",        JSON.stringify(this.getModel("locked").getData()));        } catch (e) {}
+        },
+
+        persistNotifications() {
+            try { localStorage.setItem("tsNotifications", JSON.stringify(this.getModel("notifications").getData())); } catch (e) {}
         },
 
         getContentDensityClass() {

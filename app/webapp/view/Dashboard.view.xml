@@ -22,7 +22,7 @@
                 <contentRight>
                     <SegmentedButton id="viewToggle" selectedKey="week" selectionChange=".onViewToggle">
                         <items>
-                            <SegmentedButtonItem key="day"  text="Day"  />
+                            <!-- <SegmentedButtonItem key="day"  text="Day"  /> -->
                             <SegmentedButtonItem key="week" text="Week" />
                         </items>
                     </SegmentedButton>
@@ -31,6 +31,16 @@
         </customHeader>
 
         <content>
+
+            <!-- Rejection notification banner (visible only when manager rejected the current week) -->
+            <MessageStrip
+                text="{view>/notifMessage}"
+                type="Error"
+                showIcon="true"
+                showCloseButton="true"
+                visible="{view>/notifVisible}"
+                close=".onNotifClose"
+                class="sapUiSmallMarginBeginEnd sapUiSmallMarginTop" />
 
             <!-- Week Navigator -->
             <Toolbar class="tsWeekNav sapUiSmallMarginBottom" style="Clear">
@@ -59,21 +69,28 @@
 
                 <table:columns>
 
-                    <table:Column>
+                    <table:Column width="180px">
                         <table:label><Label text="Project / Task" /></table:label>
                         <table:template>
                             <VBox class="tsProjectCell">
-                                <Input value="{rows>projectName}"
+                                <ComboBox
+                                    selectedKey="{rows>taskId}"
+                                    placeholder="Select a task..."
                                     enabled="{path:'rows>_rowLocked', formatter:'.formatNotLocked'}"
-                                    placeholder="Project Name" class="tsProjectInput" />
-                                <Input value="{rows>taskName}"
-                                    enabled="{path:'rows>_rowLocked', formatter:'.formatNotLocked'}"
-                                    placeholder="Task" class="tsTaskInput" />
+                                    selectionChange=".onTaskSelect"
+                                    filterSecondaryValues="true"
+                                    showSecondaryValues="true"
+                                    items="{path:'tasks>/', templateShareable:true}"
+                                    class="tsProjectInput">
+                                    <core:Item key="{tasks>taskId}" text="{tasks>taskName}"
+                                        additionalText="{tasks>taskDescription}" />
+                                </ComboBox>
+                                <Text text="{rows>taskName}" class="tsTaskName" wrapping="false" />
                             </VBox>
                         </table:template>
                     </table:Column>
 
-                    <table:Column hAlign="Center">
+                    <table:Column hAlign="Center" width="100px">
                         <table:label>
                             <VBox alignItems="Center" class="tsColHeaderBox">
                                 <Text text="{view>/days/0/name}" class="tsDayName" />
@@ -90,7 +107,7 @@
                         </table:template>
                     </table:Column>
 
-                    <table:Column hAlign="Center">
+                    <table:Column hAlign="Center" width="100px">
                         <table:label>
                             <VBox alignItems="Center" class="tsColHeaderBox">
                                 <Text text="{view>/days/1/name}" class="tsDayName" />
@@ -107,7 +124,7 @@
                         </table:template>
                     </table:Column>
 
-                    <table:Column hAlign="Center">
+                    <table:Column hAlign="Center" width="100px">
                         <table:label>
                             <VBox alignItems="Center" class="tsColHeaderBox">
                                 <Text text="{view>/days/2/name}" class="tsDayName" />
@@ -124,7 +141,7 @@
                         </table:template>
                     </table:Column>
 
-                    <table:Column hAlign="Center">
+                    <table:Column hAlign="Center" width="100px">
                         <table:label>
                             <VBox alignItems="Center" class="tsColHeaderBox">
                                 <Text text="{view>/days/3/name}" class="tsDayName" />
@@ -141,7 +158,7 @@
                         </table:template>
                     </table:Column>
 
-                    <table:Column hAlign="Center">
+                    <table:Column hAlign="Center" width="100px">
                         <table:label>
                             <VBox alignItems="Center" class="tsColHeaderBox">
                                 <Text text="{view>/days/4/name}" class="tsDayName" />
@@ -158,7 +175,7 @@
                         </table:template>
                     </table:Column>
 
-                    <table:Column hAlign="Center">
+                    <table:Column hAlign="Center" width="100px">
                         <table:label>
                             <VBox alignItems="Center" class="tsColHeaderBox">
                                 <Text text="{view>/days/5/name}" class="tsDayName" />
@@ -175,7 +192,7 @@
                         </table:template>
                     </table:Column>
 
-                    <table:Column hAlign="Center">
+                    <table:Column hAlign="Center" width="100px">
                         <table:label>
                             <VBox alignItems="Center" class="tsColHeaderBox">
                                 <Text text="{view>/days/6/name}" class="tsDayName" />
@@ -192,8 +209,8 @@
                         </table:template>
                     </table:Column>
 
-                    <table:Column hAlign="Center">
-                        <table:label><Label text="Week Total" /></table:label>
+                    <table:Column hAlign="Center" width="120px">
+                        <table:label><Label text="Week Total(Hrs)" /></table:label>
                         <table:template>
                             <Text
                                 text="{parts:['rows>mon','rows>tue','rows>wed','rows>thu','rows>fri','rows>sat','rows>sun'], formatter:'.formatRowTotal'}"

@@ -7,19 +7,34 @@
     xmlns:core="sap.ui.core"
     displayBlock="true">
 
-    <Page id="historyPage" title="Timesheet History" class="tsDashboardPage" showNavButton="false">
+    <Page id="historyPage" title="Timesheet History" class="tsDashboardPage"
+          showNavButton="false" enableScrolling="false">
 
         <content>
-            <VBox class="tsHistContainer">
+
+            <!-- ① No week selected yet: centered calendar -->
+            <VBox visible="{= !${histView>/weekSelected} }" class="tsHistWelcome">
+                <VBox alignItems="Center" class="tsHistWelcomeCard">
+                    <core:Icon src="sap-icon://calendar" size="2.5rem"
+                        color="#3b82f6" class="sapUiSmallMarginBottom" />
+                    <Title text="Select a Week" level="H3" class="sapUiTinyMarginBottom" />
+                    <Text text="Pick any date — the full week's timesheet will be loaded."
+                        textAlign="Center" class="tsHistWelcomeHint sapUiSmallMarginBottom" />
+                    <unified:Calendar id="histCenterCalendar" select=".onCalendarSelect" />
+                </VBox>
+            </VBox>
+
+            <!-- ② Week selected: week bar + optional inline calendar + table -->
+            <VBox visible="{histView>/weekSelected}" class="tsHistContainer">
 
                 <!-- Week selector bar -->
                 <HBox alignItems="Center" class="tsHistWeekBar">
                     <Button icon="sap-icon://calendar" type="Transparent"
-                        tooltip="Select a week" press=".onCalendarToggle" />
+                        tooltip="Select a different week" press=".onCalendarToggle" />
                     <Text text="{histView>/selectedWeekLabel}" class="tsHistWeekLabel" />
                 </HBox>
 
-                <!-- Inline calendar — hidden by default -->
+                <!-- Inline calendar — hidden by default, toggled by icon above -->
                 <VBox visible="{histView>/showCalendar}" class="tsHistCalendarWrapper">
                     <unified:Calendar id="histCalendar" select=".onCalendarSelect" />
                 </VBox>
@@ -42,9 +57,7 @@
 
                     <table:columns>
 
-                        <!-- All columns have no explicit width — UI5 divides them equally -->
-
-                        <table:Column>
+                        <table:Column width="180px">
                             <table:label><Label text="Project / Task" /></table:label>
                             <table:template>
                                 <VBox class="tsProjectCell">
@@ -56,7 +69,7 @@
                             </table:template>
                         </table:Column>
 
-                        <table:Column hAlign="Center">
+                        <table:Column hAlign="Center" width="100px">
                             <table:label>
                                 <VBox alignItems="Center" class="tsColHeaderBox">
                                     <Text text="{histView>/days/0/name}" class="tsDayName" />
@@ -69,7 +82,7 @@
                             </table:template>
                         </table:Column>
 
-                        <table:Column hAlign="Center">
+                        <table:Column hAlign="Center" width="100px">
                             <table:label>
                                 <VBox alignItems="Center" class="tsColHeaderBox">
                                     <Text text="{histView>/days/1/name}" class="tsDayName" />
@@ -82,7 +95,7 @@
                             </table:template>
                         </table:Column>
 
-                        <table:Column hAlign="Center">
+                        <table:Column hAlign="Center" width="100px">
                             <table:label>
                                 <VBox alignItems="Center" class="tsColHeaderBox">
                                     <Text text="{histView>/days/2/name}" class="tsDayName" />
@@ -95,7 +108,7 @@
                             </table:template>
                         </table:Column>
 
-                        <table:Column hAlign="Center">
+                        <table:Column hAlign="Center" width="100px">
                             <table:label>
                                 <VBox alignItems="Center" class="tsColHeaderBox">
                                     <Text text="{histView>/days/3/name}" class="tsDayName" />
@@ -108,7 +121,7 @@
                             </table:template>
                         </table:Column>
 
-                        <table:Column hAlign="Center">
+                        <table:Column hAlign="Center" width="100px">
                             <table:label>
                                 <VBox alignItems="Center" class="tsColHeaderBox">
                                     <Text text="{histView>/days/4/name}" class="tsDayName" />
@@ -121,7 +134,7 @@
                             </table:template>
                         </table:Column>
 
-                        <table:Column hAlign="Center">
+                        <table:Column hAlign="Center" width="100px">
                             <table:label>
                                 <VBox alignItems="Center" class="tsColHeaderBox">
                                     <Text text="{histView>/days/5/name}" class="tsDayName" />
@@ -134,7 +147,7 @@
                             </table:template>
                         </table:Column>
 
-                        <table:Column hAlign="Center">
+                        <table:Column hAlign="Center" width="100px">
                             <table:label>
                                 <VBox alignItems="Center" class="tsColHeaderBox">
                                     <Text text="{histView>/days/6/name}" class="tsDayName" />
@@ -147,8 +160,8 @@
                             </table:template>
                         </table:Column>
 
-                        <table:Column hAlign="Center">
-                            <table:label><Label text="Week Total" /></table:label>
+                        <table:Column hAlign="Center" width="110px">
+                            <table:label><Label text="Week Total(Hrs)" /></table:label>
                             <table:template>
                                 <Text text="{histView>_weekTotal}" textAlign="Center"
                                     class="{path:'histView>_type', formatter:'.formatWeekTotalClass'}" />
@@ -159,6 +172,7 @@
                 </table:Table>
 
             </VBox>
+
         </content>
 
     </Page>

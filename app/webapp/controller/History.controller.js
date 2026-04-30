@@ -42,9 +42,10 @@ sap.ui.define([
 
         onInit() {
             this._oHistViewModel = new JSONModel({
-                selectedWeekLabel: "Select a date",
-                noDataText:   "Click the calendar icon above to select a week.",
+                selectedWeekLabel: "",
+                noDataText:   "No timesheet was submitted for this week.",
                 showCalendar: false,
+                weekSelected: false,
                 hasData:      false,
                 status:       "Pending",
                 statusType:   "Attention",
@@ -76,6 +77,8 @@ sap.ui.define([
             const oStart = aDates[0].getStartDate();
             if (!oStart) return;
 
+            // Mark week as selected so the table view becomes visible
+            this._oHistViewModel.setProperty("/weekSelected", true);
             this._oHistViewModel.setProperty("/showCalendar", false);
             this._loadWeekData(getWeekStart(new Date(oStart)));
         },
@@ -124,7 +127,7 @@ sap.ui.define([
 
             // Day Total row (fixed at bottom -2)
             const dayTotalRow = {
-                _type: "total", projectName: "Day Total", taskName: "",
+                _type: "total", projectName: "Day Total(Hrs)", taskName: "",
                 _weekTotal: this._toHHMM(grand)
             };
             DAYS.forEach(d => { dayTotalRow[d] = this._toHHMM(colDec[d]); });
@@ -184,6 +187,12 @@ sap.ui.define([
                 if (idx >= 0) {
                     submissions[idx].status = sStatus;
                     oHistoryModel.setProperty("/submissions", submissions);
+                    this.getOwnerComponent().persistHistory();
+                }
+
+                if (sStatus === "Rejected") {
+                    this._unlockWeek(this._sCurrentWeekStart);
+                    this._postRejectionNotification(this._sCurrentWeekStart);
                 }
             }
 
@@ -191,6 +200,42 @@ sap.ui.define([
             if (this._oCurrentWeekStart) {
                 this._loadWeekData(this._oCurrentWeekStart);
             }
+        },
+
+        _unlockWeek(sWeekStart) {
+            const oLocksModel = this.getOwnerComponent().getModel("locked");
+            const allLocks    = oLocksModel.getData();
+            const weekRows    = allLocks[sWeekStart];
+            if (!weekRows) return;
+
+            weekRows.forEach(row => {
+                DAYS.forEach(d => { row.locked[d] = false; });
+                row._rowLocked = false;
+            });
+            oLocksModel.setData(allLocks);
+            this.getOwnerComponent().persistLocked();
+        },
+
+        _postRejectionNotification(sWeekStart) {
+            const sLabel      = this._oHistViewModel.getProperty("/selectedWeekLabel");
+            const oNotifModel = this.getOwnerComponent().getModel("notifications");
+            const items       = oNotifModel.getProperty("/items") || [];
+
+            // Replace existing notification for same week, or add new one
+            const existing = items.findIndex(n => n.weekStart === sWeekStart);
+            const notif = {
+                weekStart: sWeekStart,
+                message:   `Your timesheet for ${sLabel} was rejected by your manager. Please review and resubmit.`,
+                read:      false,
+                timestamp: new Date().toISOString()
+            };
+            if (existing >= 0) {
+                items[existing] = notif;
+            } else {
+                items.unshift(notif);
+            }
+            oNotifModel.setProperty("/items", items);
+            this.getOwnerComponent().persistNotifications();
         },
 
         // ── Cell class formatters ────────────────────────────────────────
