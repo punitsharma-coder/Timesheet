@@ -1,7 +1,8 @@
 using { ccentrik.employee.timesheet.schema as db } from '../db/data-model';
 
 // ── Employee Service ──────────────────────────────────────────────────────────
-service EmployeeService @(path:'/employee') {
+service EmployeeService @(path:'/employee' , requires:'authenticated-user') {
+    
 
     entity MyTimesheets as projection on db.timesheet.TimesheetHeader;
     entity MyEntries    as projection on db.timesheet.TimesheetEntry;
@@ -12,7 +13,7 @@ service EmployeeService @(path:'/employee') {
 }
 
 // ── Manager Service ───────────────────────────────────────────────────────────
-service ManagerService @(path:'/manager') {
+service ManagerService @(path:'/manager' , requires:'authenticated-user') {
 
     // Only timesheets waiting for a decision are exposed here
     entity PendingApprovals as projection on db.timesheet.TimesheetHeader
