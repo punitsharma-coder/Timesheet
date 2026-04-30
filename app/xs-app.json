@@ -3,8 +3,8 @@
     "authenticationMethod": "none",
     "routes": [
         {
-            "source":      "^/timesheet/(.*)$",
-            "target":      "/timesheet/$1",
+            "source": "^/timesheet/(.*)$",
+            "target": "/timesheet/$1",
             "destination": "srv-api",
             "csrfProtection": false
         },
