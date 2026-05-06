@@ -1,0 +1,47 @@
+<mvc:View
+    controllerName="timesheet.app.controller.TaskDescription"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:card="sap.f.cards"
+    displayBlock="true">
+
+    <Page title="Task Descriptions" showNavButton="true" navButtonPress=".onNavBack">
+
+        <content>
+            <SearchField
+                id="taskSearch"
+                placeholder="Search tasks..."
+                search=".onSearch"
+                style="margin:12px 16px; width:calc(100% - 32px);" />
+
+            <List
+                id="taskList"
+                items="{/MyTasks}"
+                mode="None"
+                noDataText="No tasks assigned">
+                <items>
+                    <ObjectListItem
+                        title="{taskName}"
+                        number="{priority}"
+                        numberState="{= ${priority} === 'High' ? 'Error' : ${priority} === 'Medium' ? 'Warning' : 'Success' }"
+                        type="Active"
+                        press=".onTaskPress">
+                        <attributes>
+                            <ObjectAttribute title="Task ID" text="{taskId}" />
+                            <ObjectAttribute title="Status"  text="{status}"  />
+                            <ObjectAttribute title="Due Date" text="{dueDate}" />
+                        </attributes>
+                        <firstStatus>
+                            <ObjectStatus
+                                text="{status}"
+                                state="{= ${status} === 'Completed' ? 'Success' : ${status} === 'In Progress' ? 'Warning' : 'None' }" />
+                        </firstStatus>
+                    </ObjectListItem>
+                </items>
+            </List>
+        </content>
+
+    </Page>
+
+</mvc:View>

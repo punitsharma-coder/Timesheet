@@ -1,13 +1,13 @@
 {
     "requires": {
         "auth": {
-            "kind": "xsuaa"
+            "kind": "dummy"
         },
         "db": {
-            "kind": "hana"
+            "kind": "sqlite",
+            "credentials": {
+                "database": "db/timesheet.db"
+            }
         }
-    },
-    "hana": {
-        "deploy-format": "hdbtable"
     }
 }

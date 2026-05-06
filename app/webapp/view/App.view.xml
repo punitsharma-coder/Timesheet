@@ -8,7 +8,8 @@
 
     
     <Toolbar style="background:#1e293b; height:48px;">
-        <Button icon="sap-icon://menu2"
+        <Button id="menuToggleBtn"
+                icon="sap-icon://menu2"
                 type="Transparent"
                 press=".onMenuToggle"
                 style="color:#ffffff;" />
@@ -50,7 +51,7 @@
                             type="Active"
                             press=".onNavSelect"
                             style="background:transparent; color:#cbd5e1;">
-                            <customData><core:CustomData key="target" value="dashboard" /></customData>
+                            <customData><core:CustomData key="target" value="task-description" /></customData>
                         </StandardListItem>
                         <StandardListItem title="Timesheet History"
                             icon="sap-icon://history"
@@ -76,7 +77,8 @@
                       headerText="Manager"
                       mode="None"
                       backgroundDesign="Transparent"
-                      style="background:transparent;">
+                      style="background:transparent;"
+                      visible="{= ${appView>/userRole} === 'manager'}">
                     <items>
                         <StandardListItem title="Approvals"
                             icon="sap-icon://approvals"
