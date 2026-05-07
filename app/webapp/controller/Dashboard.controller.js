@@ -59,6 +59,7 @@ sap.ui.define([
                 weekStart:      toDateString(weekStart),
                 dashGridHTML:   "",
                 weekTotalLabel: "0:00 hrs this week",
+                isNextDisabled:  true, //added to disable next button for future date on 07 may
                 completion: {
                     pct: 0, label: "0 of 5 days filled",
                     state: "None", hint: "Fill Mon–Fri to complete your timesheet"
@@ -93,7 +94,17 @@ sap.ui.define([
             this._setWeek(new Date(y, m - 1, d + 7));
         },
 
-        onToday() { this._setWeek(new Date()); },
+        onToday() { 
+            this._setWeek(new Date()); 
+        },
+
+        //Added to stop viewing future dates 07-may
+        isCurrentOrFutureWeek(sWeekStart) {
+        const today = getWeekStart(new Date());
+        const current = new Date(sWeekStart);
+        return current >= today;
+        },
+        //end of add code
 
         _setWeek(date) {
             const weekStart  = getWeekStart(date);
@@ -102,6 +113,7 @@ sap.ui.define([
             const sWeekStart = toDateString(weekStart);
             this._oDashModel.setProperty("/weekStart", sWeekStart);
             this._oDashModel.setProperty("/weekLabel", `${toShortLabel(weekStart)} – ${toShortLabel(weekEnd)}`);
+            this._oDashModel.setProperty("/isNextDisabled", this.isCurrentOrFutureWeek(sWeekStart)); //added 07 may
             this._computeWeekHours(sWeekStart);
         },
 

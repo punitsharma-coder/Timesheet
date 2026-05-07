@@ -106,7 +106,6 @@ sap.ui.define([
         },
 
         _setWeekByFilter(sFilter) {
-            const minWeek = getAllowedMinWeek();
             const maxWeek = getAllowedMaxWeek();
             const [y, m, d] = sFilter.split("-").map(Number);
 
@@ -117,7 +116,16 @@ sap.ui.define([
             }
             if (!start) start = getWeekStart(new Date(y, m - 1, d + 1));
 
-            if (start.getTime() < minWeek.getTime()) start = new Date(minWeek);
+            // Only apply minWeek clamping if NOT a rejected edit navigation
+            const isRejectedEdit = this.getOwnerComponent()._isRejectedEdit;
+            if (isRejectedEdit) {
+                // Clear the flag after use
+                this.getOwnerComponent()._isRejectedEdit = false;
+            } else {
+                const minWeek = getAllowedMinWeek();
+                if (start.getTime() < minWeek.getTime()) start = new Date(minWeek);
+            }
+
             if (start.getTime() > maxWeek.getTime()) start = new Date(maxWeek);
 
             const end = new Date(start);
@@ -127,7 +135,7 @@ sap.ui.define([
             this._oViewModel.setProperty("/weekStartFilter", sFilter);
             this._oViewModel.setProperty("/weekRangeLabel",  `${toShortLabel(start)} - ${toShortLabel(end)}`);
             this._oViewModel.setProperty("/days",            buildDayLabels(start));
-            this._oViewModel.setProperty("/canGoPrev",       start.getTime() > minWeek.getTime());
+            this._oViewModel.setProperty("/canGoPrev",       start.getTime() > getAllowedMinWeek().getTime());
             this._oViewModel.setProperty("/canGoNext",       start.getTime() < maxWeek.getTime());
 
             this._loadTimesheetData();
